@@ -36,23 +36,24 @@
   
 **New potential risks**.  
 
-Decision errors that may result in death and injury
-Cybersecurity:
+* Decision errors that may result in death and injury
+
+* Cybersecurity:
 
 
 **Critical Tasks to increase benefits and mitigate risks**
 
-Object detection, drivable area segmentation, lane detection, deep detection, etc
+* Object detection, drivable area segmentation, lane detection, deep detection, etc
 
 **Main Project Goal**
 
-Focus on traffic  object detection (classification and localization)
+* Focus on traffic  object detection (classification and localization)
 
-Object detection is a crucial for object tracking, trajectory estimation,  and collision avoidanc
+* Object detection is a crucial for object tracking, trajectory estimation,  and collision avoidanc
 
 **Main Project Challenge**
 
-Detect dynamic road elements (pedestrians, cyclist, vehicles) that are 
+* Detect dynamic road elements (pedestrians, cyclist, vehicles) that are 
 continuously changing location and behaviour under diverse lighting and background conditions
 
 ## Dataset
