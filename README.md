@@ -3,7 +3,7 @@
 ### Advisor: Mariona Caròs
 
 # Table of contents
-1.[Motivation](#Motivation)
+1. [Motivation](#Motivation)
 
 ## 1. Motivation
 
