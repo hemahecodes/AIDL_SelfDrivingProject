@@ -5,7 +5,7 @@
 # Table of contents
 1.  [Motivation](#Motivation)
 2.  [Dataset](#Dataset)
-3.  [Anlaysis of DataSet](#Analysis of The Dataset)
+3.  [Anlaysis of DataSet](#AnalysisofTheDataset)
 4.  [Yolo V1 Architectures](#Yolo V1 Architectures)
 5.  [Loss Function](#Loss Function)
 6.  [Evaluation Matrix](#Evaluation Matrix)
