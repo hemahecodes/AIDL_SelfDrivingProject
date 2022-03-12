@@ -11,9 +11,9 @@
 
 **The benefits of Autonomous vehicles**
 
-Greater road safety, reduce crash, and congestion,
+* Greater road safety, reduce crash, and congestion,
 
-Independence for people with disabilities (blind, old)
+* Independence for people with disabilities (blind, old)
   
 **New potential risks**.  
 
