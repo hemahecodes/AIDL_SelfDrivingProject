@@ -2,10 +2,7 @@ import torch
 from torchsummary import summary
 import matplotlib.pyplot as plt
 from model.nn_model import YoloV1Model
-from data import DataLoader
-from utils import retrieve_box
 import torchvision
-from torchvision.utils import draw_bounding_boxes
 import pdb
 import wandb
 import os
@@ -15,6 +12,9 @@ from torchvision.transforms.functional import to_tensor, to_pil_image
 from torch.utils.data import Dataset
 import glob
 from utils import YoloLoss
+from data import BDD100k_Dataset
+from utils import mAP
+from utils import extract_boxes
 
 
 def get_args():
@@ -30,87 +30,152 @@ def get_args():
     args = parser.parse_args()
     return args
 
+def train_net(network, train_loader, eval_loader, optimizer, criterion, hparams, category_list, plot=True):
+    """ Function that trains and evals a network for num_epochs,
+      showing the plot of losses and accs and returning them.
+    """
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    tr_losses = []
+    tr_map = []
+    te_losses = []
+    te_map = []
+    num_epochs = hparams['epochs']
+    network.to(device)
 
+    for epoch in range(1, num_epochs + 1):
+        tr_loss, map_training = train_epoch(train_loader, network, optimizer, criterion, hparams, category_list)
+        wandb.log({"Training Loss": tr_loss})
+        wandb.log({"Training mAP": map_training})
+        te_loss, map_eval = eval_epoch(eval_loader, network, criterion, hparams, category_list)
+        wandb.log({"Eval Loss": te_loss})
+        wandb.log({"Eval mAP": map_eval})
+        te_losses.append(te_loss)
+        te_map.append(map_eval)
+        tr_losses.append(tr_loss)
+        tr_map.append(map_training)
+        rets = {'tr_losses':tr_losses, 'te_losses':te_losses, 'map_tr': tr_map, 'map_eval': te_map}
+    if plot:
+        plt.figure(figsize=(10, 8))
+        plt.subplot(2,1,1)
+        plt.xlabel('Epoch')
+        plt.ylabel('NLLLoss')
+        plt.plot(tr_losses, label='train')
+        plt.plot(te_losses, label='eval')
+        plt.legend()
+        plt.subplot(2,1,2)
+        plt.xlabel('Epoch')
+        plt.ylabel('mAP')
+        plt.plot(te_map, label='eval')
+        plt.plot(tr_map, label='train')
+        plt.legend()
+        return rets
 
-def train(jsons_p,imgs_p):
-    # Training yolo v1
+def eval_epoch(eval_loader, network, loss_fn, hparams,category_list):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    network.eval()
+    cell_dim = int(448 / 7)
+    threshold = 0.5
+    test_loss_avg = []
+    mean_avg_prec_test = []
+    train_idx = 0
+    with torch.no_grad():
+        try:
+            for i, (images, targets) in enumerate(eval_loader):
+                all_pred_boxes = []
+                all_target_boxes = []
+                images, targets = images.to(device), targetd.to(device)
+                output = network(images)
+                loss = loss_fn(output, targets,set='val')
+                predictions = output.reshape(-1, 7, 7,
+                                                 len(category_list) + 2 * 5)
+                pred_boxes = extract_boxes(predictions, len(category_list), 2,
+                                           cell_dim, threshold)
+                target_boxes = extract_boxes(targets, len(category_list), 1, cell_dim,
+                                             threshold)
+                for sample_idx in range(len(pred_boxes)):
+                    nms_boxes = pred_boxes[sample_idx]
+                    for nms_box in nms_boxes:
+                        all_pred_boxes.append([train_idx] + nms_box)
 
+                    for box in target_boxes[sample_idx]:
+                        all_target_boxes.append([train_idx] + box)
+                    train_idx += 1
+                print('loaded all boxes')
+                mean_avg_prec = mAP(all_pred_boxes,
+                                    all_target_boxes,
+                                    0.5,
+                                    category_list)
 
-    category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
-                     "truck", "train", "other person", "bus", "car", "rider", "motorcycle",
-                     "bicycle", "trailer"]
-
-
-    # Defining hyperparameters:
-    hparams = {
-        'num_epochs': 100,
-        'batch_size': 64,
-        'channels': 3,
-        'learning_rate': 0.0001,
-        'classes': len(category_list),
-        'nsamples': 25000,
-    }
-    use_gpu = True
-    data = \
-        DataLoader(
-            img_files_path=imgs_p,
-            target_files_path=jsons_p,
-            category_list=category_list,
-            split_size=7, # Grid Size
-            batch_size=hparams['batch_size'],
-            load_size=1 # Batches to load at once
-        )
-    yolo = YoloV1Model(channels=hparams['channels'],
-                       classes=hparams['classes'],
-                       bb=2,
-                       s=7)
-    #optimizer = torch.optim.SGD(params=yolo.parameters(), lr=hparams['learning_rate'], momentum=0.9, weight_decay=0.0005)
-    # Test Adam optimizer to enhance convergence
-    optimizer = torch.optim.Adam(params=yolo.parameters(), lr=hparams['learning_rate'], weight_decay=0.0005)
-    
-
-    # Move model to the GPU
-    device = torch.device("cuda:0" if use_gpu and torch.cuda.is_available() else "cpu")
-    print(device)
-    loss_fn = YoloLoss(C=hparams['classes'], S=7)
-    train_loss_avg = []
-    yolo.train()
-
-    for epoch in range(hparams['num_epochs']):
-
-        print("DATA IS BEING LOADED FOR A NEW EPOCH")
-        print("")
-        data.LoadFiles()  # Resets the DataLoader for a new epoch
-
-        while len(data.img_files) > 0:
-
-            print("LOADING NEW BATCHES")
-            print("Remaining files:" + str(len(data.img_files)))
-            print("")
-            data.LoadData()  # Loads new batches
-
-            for batch_idx, (img_data, target_data) in enumerate(data.data):
-                if batch_idx > hparams['nsamples']:
-                    break
-                optimizer.zero_grad()
-                img_data = img_data.to(device)
-                target_data = target_data.to(device)
-                prediction = yolo(img_data)
-
-                loss = loss_fn(prediction,target_data)
                 train_loss_avg.append(loss.item())
-                wandb.log({"loss": loss})
+                mean_avg_prec_test.append(mean_avg_prec)
+        except:
+            pass
 
-                loss.backward()
-                optimizer.step()
+    # Average acc across all correct predictions batches now
+    if len(test_loss_avg) == 0 or len(mean_avg_prec_test) == 0:
+        return 0, 0
+    eval_loss = sum(test_loss_avg) / len(test_loss_avg)
+    print('Eval set: Average loss: {:.4f}'.format(
+        eval_loss
+        ))
 
-                print('Train Epoch: {} of {} [Batch: {}/{} ({:.0f}%)] Loss: {:.6f}'.format(
-                    epoch + 1, hparams["num_epochs"], batch_idx + 1, len(data.data),
-                    (batch_idx + 1) / len(data.data) * 100., loss))
-                print('')
-                print("=> Saving checkpoint")
-                print("")
-                torch.save(yolo, 'YOLO_bdd100k_2.pt')
+    return eval_loss, sum(mean_avg_prec_test) / len(mean_avg_prec_test)
+
+
+def train_epoch(data_train,yolo,optimizer, loss_fn, hparams, category_list):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    train_loss_avg = []
+    mean_avg_prec_train = []
+    yolo.to(device)
+    yolo.train()
+    train_idx = 0
+    try:
+        for i, (images, targets) in enumerate(data_train):
+            cell_dim = int(448 / 7)
+            threshold = 0.5
+            all_pred_boxes = []
+            all_target_boxes = []
+            optimizer.zero_grad()
+            img_data = images.to(device)
+            target_data = targets.to(device)
+            prediction = yolo(img_data)
+
+            loss = loss_fn(prediction,target_data, set='train')
+            train_loss_avg.append(loss.item())
+
+            predictions = prediction.reshape(-1, 7, 7,
+                                              len(category_list) + 2 * 5)
+            pred_boxes = extract_boxes(predictions, len(category_list), 2,
+                                       cell_dim, threshold)
+            target_boxes = extract_boxes(target_data, len(category_list), 1, cell_dim,
+                                         threshold)
+            for sample_idx in range(len(pred_boxes)):
+                nms_boxes = pred_boxes[sample_idx]
+                for nms_box in nms_boxes:
+                    all_pred_boxes.append([train_idx] + nms_box)
+
+                for box in target_boxes[sample_idx]:
+                    all_target_boxes.append([train_idx] + box)
+                train_idx += 1
+            print('loaded all boxes')
+            mean_avg_prec = mAP(all_pred_boxes,
+                                all_target_boxes,
+                                0.5,
+                                category_list)
+            mean_avg_prec_train.append(mean_avg_prec)
+
+            loss.backward()
+            optimizer.step()
+
+            print('')
+            print("=> Saving checkpoint")
+            print("")
+            torch.save(yolo, 'YOLO_bdd100k_test.pt')
+    except:
+        pass
+    if len(train_loss_avg) == 0 or len(mean_avg_prec_train) == 0:
+        return 0, 0
+    return sum(train_loss_avg) / len(train_loss_avg), sum(mean_avg_prec_train) / len(mean_avg_prec_train)
 
 if __name__ == '__main__':
 
@@ -121,6 +186,40 @@ if __name__ == '__main__':
         "optim": 'Adam'
     })
     args = get_args()
+    category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
+                     "truck", "train", "other person", "bus", "car", "rider", "motorcycle",
+                     "bicycle", "trailer"]
+    # Defining hyperparameters:
+    hparams = {
+        'epochs': 100,
+        'batch_size': 32,
+        'channels': 3,
+        'learning_rate': 0.0001,
+        'classes': len(category_list),
+    }
     jsons_p = args.json_path
     imgs_p = args.imgs
-    train(jsons_p,imgs_p)
+    bddk100k_train = BDD100k_Dataset(jsons_p, category_list, imgs_p)
+    bddk100k_eval = BDD100k_Dataset(jsons_p, category_list, imgs_p, set='test')
+    yolo = YoloV1Model(channels=hparams['channels'],
+                       classes=hparams['classes'],
+                       bb=2,
+                       s=7)
+    #train_size = int(0.8 * len(bddk100k_train))
+    #test_size = len(bddk100k_train) - train_size
+    #train_dataset, test_dataset = torch.utils.data.random_split(bddk100k_train, [train_size, test_size])
+    data_train = torch.utils.data.DataLoader(
+        bddk100k_train,
+        batch_size=hparams['batch_size'],
+        shuffle=False
+    )
+    data_eval = torch.utils.data.DataLoader(
+        bddk100k_eval,
+        batch_size=hparams['batch_size'],
+        shuffle=False
+    )
+    print('Len test dataset:', len(data_train))
+    print('Len eval dataset:', len(data_eval))
+    optimizer = torch.optim.Adam(params=yolo.parameters(), lr=hparams['learning_rate'], weight_decay=0.0005)
+    loss_fn = YoloLoss(C=hparams['classes'], S=7)
+    train_net(yolo, data_train, data_eval, optimizer, loss_fn,hparams, category_list)
