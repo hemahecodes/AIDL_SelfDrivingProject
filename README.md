@@ -363,6 +363,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
 |:--:|
 | ** FastRCNN Prediction with ResNet50** |
 </div>
+
 **RetinaNet with ResNet50**
 
 <div align="center">
