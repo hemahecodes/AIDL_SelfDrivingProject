@@ -239,7 +239,7 @@ The main advantages of doing transfer learning are the saving of computer and ti
 
 As we have used the Pytorch environment on this project, we have taken advantage of some models already pretrained on pytorch and COCO dataset. So, we have selected 2 of the best performing models:
 
-* Faster R-CNN: This is the last algorithm of the trilogy (R-CNN, Fast R-CNN and Faster R-CNN) and the main idea is that there are 2 subnetworks (2-stage object detector):
+* **Faster R-CNN:** This is the last algorithm of the trilogy (R-CNN, Fast R-CNN and Faster R-CNN) and the main idea is that there are 2 subnetworks (2-stage object detector):
   
   1. Region Proposal Network: This network will be the responsible of purposing different regions in which may exist an object
   
@@ -248,7 +248,7 @@ As we have used the Pytorch environment on this project, we have taken advantage
 ![alt text](https://user-images.githubusercontent.com/94481725/156935475-d38f8f50-90e9-482b-99c5-34bf1f1b7588.jpg)
 
 
-* RetinaNet: This is a one-stage object detection model that utilizes a focal loss function to address class imbalance during training.
+* **RetinaNet:** This is a one-stage object detection model that utilizes a focal loss function to address class imbalance during training.
 
 ![alt text](https://user-images.githubusercontent.com/94481725/156935669-17567676-0f0e-4033-ac00-cc54477dc0e5.jpg)
 
@@ -256,17 +256,17 @@ The Transfer Learning codes are on the directory *transfer_learning* and in orde
 
 On the first one, 3 arguments are needed: 
 
-1. "b": It refers to the backbone used. Possibilities:
+1. **"b"**: It refers to the backbone used. Possibilities:
 
-  1.1 b=1: MobileNetV3: Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone
+  - **b=1:** MobileNetV3: Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone
   
-  1.2 b=2: ResNet50: Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
+  - **b=2:** ResNet50: Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
   
-  1.3 b=3: MobileNetV3-320: Constructs a low resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone tunned for mobile use-cases.
+  - **b=3:** MobileNetV3-320: Constructs a low resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone tunned for mobile use-cases.
   
-2. "c": It refers to the number of classes used (on the data subset we have 11 classes)
+2. **"c":** It refers to the number of classes used (on the data subset we have 11 classes)
  
-3. "e": Number of epochs for training the model
+3. **"e":** Number of epochs for training the model
 
 So, the main steps would be:
 
@@ -315,8 +315,6 @@ So, we can see that it has worked pretty well. In general, we have seen the best
 
 ## Validation with our own images
 
-## Inference
-
 ## Conclusion and future work
  In our project we implemented and trained a one stage detector YOLO and two stage detector Faster R-CNN on the BDD 100K dataset in the context of of autonomous vehicles.
 
@@ -331,7 +329,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
  **Generally we would need higher precision and real-time driving perception system that can assist the autonomous vehicle in making the reasonable decision while driving safely.**
 
 
-## 9. References
+## References
 
 Gene Lewis. Object detection for autonomous vehicles, 2014.
 
