@@ -98,13 +98,13 @@ After that, each of the SxS cells of the grid will be responsible to detect a ma
 On the following example, the cell (4,3) would be the responsible for detecting the bike
 
 
-| ![alt text](https://user-images.githubusercontent.com/94481725/156919554-b71cf241-c44f-4c2a-a214-f4bb080f30e9.jpg) |
+| ![alt text](https://user-images.githubusercontent.com/94481725/156919554-b71cf241-c44f-4c2a-a214-f4bb080f30e9.jpg?style=centerme) |
 |:--:|
 | *Each cell responsible for detecting a maximum of 1 object in the image* |
 
 In order to do this, YOLO v1 has an architecture consisting of 6 blocks combining convolutional layers with maxpooling layers and followed by 2 fully connected layers. Furthermore it applies the Leaky ReLu activation function after all layers except for the last one and uses dropout between the two fully connected layers in order to tackle overfitting.
 
-| ![alt text](https://user-images.githubusercontent.com/94481725/156921245-b489fc5f-b218-41b8-9c38-27ca6a868e7b.jpg) |
+| ![alt text](https://user-images.githubusercontent.com/94481725/156921245-b489fc5f-b218-41b8-9c38-27ca6a868e7b.jpg?style=centerme) |
 |:--:|
 | *Yolo V1 Architecture* |
 The dimension of the last fully connected layer would be SxSx(B * 5 + C) where:
@@ -119,7 +119,7 @@ So, for each cell of the image you have:
 
 It is more clear showed in this image:
 
-| ![alt text](https://user-images.githubusercontent.com/94481725/156921416-21bb7fe4-35cc-48a5-878b-0a5cffa70b77.jpg) |
+| ![alt text](https://user-images.githubusercontent.com/94481725/156921416-21bb7fe4-35cc-48a5-878b-0a5cffa70b77.jpg?style=centerme) |
 |:--:|
 |*Yolo V1 predict two bounding box, inside the two bounding box it has 5 attributes this are:x_y coordinate , width, height and confidence score for each bounding box.  totaly it has 10 attributes and the remaining 20 are for class probability*.|
 
@@ -133,7 +133,7 @@ The loss function in YOLO v1 is not one of the classic losses in neural networks
 
 1.1. *Bounding box centroid loss*: This will be the distance of the center of the predicted bounding box and the ground truth bounding box but it is important to keep in mind that it is only computed when there actually exists an object on the studied cell. It is computed as follows: 
 
-| ![alt text](https://user-images.githubusercontent.com/94481725/156934299-24356708-fede-4f9d-a460-eebf373cfcfc.jpg) |
+| ![alt text](https://user-images.githubusercontent.com/94481725/156934299-24356708-fede-4f9d-a460-eebf373cfcfc.jpg?style=centerme) |
 |:--:|
 | *Distance of the centre of predicted bounding box and ground truth bounding box* |
 
