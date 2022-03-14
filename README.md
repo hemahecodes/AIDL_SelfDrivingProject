@@ -21,7 +21,7 @@
 16. [Models Comparision](https://github.com/hemahecodes/AIDL_SelfDrivingProject#models-comparison)
 17. [Validation With Our Own Images](https://github.com/hemahecodes/AIDL_SelfDrivingProject#validation-with-our-own-images)
 19. [Conclusion And Future Work](https://github.com/hemahecodes/AIDL_SelfDrivingProject#conclusion-and-future-work)
-20. [Refernces](https://github.com/hemahecodes/AIDL_SelfDrivingProject#9-references)
+20. [Refernces](https://github.com/hemahecodes/AIDL_SelfDrivingProject#references)
 
 ## 1. Motivation
 
