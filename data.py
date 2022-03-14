@@ -5,156 +5,111 @@ from os import listdir
 from PIL import Image
 import json
 import random
+from PIL import ImageFile
 
+from torchvision.transforms.functional import to_tensor, to_pil_image
+from torch.utils.data import Dataset
 
-class DataLoader():
-
-    def __init__(self, img_files_path, target_files_path, category_list, split_size, 
-                 batch_size, load_size):
-        
-        self.img_files_path = img_files_path
-        self.target_files_path = target_files_path       
-        self.category_list = category_list        
-        self.num_classes = len(category_list)       
-        self.split_size = split_size        
-        self.batch_size = batch_size      
-        self.load_size = load_size
-        
-        self.img_files = [] # Will contain the remaining image names from the folder
-        self.target_files = [] # Will contain the json elements with the ground-truth labels
-        
-        self.data = [] # Will contain tuples where each tuple contains a mini-batch of img and target tensors  
-        self.img_tensors = [] # Used to temporary store image tensors from a single batch
-        self.target_tensors = [] # Used to temporary store target tensors from a single batch
-        
-        # Define transform which is applied to every single image to resize 
-        # and convert it into a tensor
-        self.transform = transforms.Compose([
-            transforms.Resize((448,448), Image.NEAREST),
-            transforms.ToTensor(),
-            ])
-    
-
-    def LoadFiles(self):
-            
-        # All image names from the directory are loaded into the list img_files.
-        self.img_files = listdir(self.img_files_path)
-        
-        # The json file containing the labels is loaded into the list target_files.
-        f = open(self.target_files_path)
-        self.target_files = json.load(f)
-        
-        
-    def LoadData(self):
-        # Reset the cache
-        self.data = []    
-        self.img_tensors = [] 
-        self.target_tensors = [] 
-
-        for i in range(len(self.img_files)):
-            # Check if batch is full and perhaps start a new one
-            if len(self.img_tensors) == self.batch_size:
-                self.data.append((torch.stack(self.img_tensors),
-                              torch.stack(self.target_tensors)))
-                self.img_tensors = []
-                self.target_tensors = []
-                print('Loaded batch ', len(self.data), 'of ', self.load_size)
-                print('Percentage Done: ', round(len(self.data)/self.load_size*100., 2), '%')
-                print('')
-            
-            if len(self.data) == self.load_size:
-                break # The data list is full with the desired amount of batches
-                
-            # Extracts a single random image and the corresponding label, and 
-            # transforms them into tensors. Both are appended to the img_tensors 
-            # and target_tensors lists
-            self.extract_image_and_label() 
-
-
-    def extract_image_and_label(self):
-        
-        img_tensor, chosen_image = self.extract_image()
-        target_tensor = self.extract_json_label(chosen_image)
-        
-        if target_tensor is not None: # Checks if the label contains any data
-            self.img_tensors.append(img_tensor)
-            self.target_tensors.append(target_tensor)
+class BDD100k_Dataset(Dataset):
+    def __init__(self,
+                 f,
+                 category_list,
+                 imgs_path,
+                 set='train'):
+        import glob
+        import os
+        self.set = set
+        if self.set == 'train':
+            self.label_json = 'bdd100k_labels_images_train.json'
         else:
-            print("No label found for " + chosen_image) # Log the image without label
-            print("")
+            self.label_json = 'bdd100k_labels_images_val.json'
+        self.category_list = category_list
+        self.json_file = open(os.path.join(f, self.label_json),'r')
+        self.target_files = json.load(self.json_file)
+        self.images = sorted(glob.glob(os.path.join(imgs_path,self.set)+'/*.jpg'))
+        self.labels = {}
+        for image in self.images:
+            self.labels[os.path.basename(image)] = extract_json_label(os.path.basename(image),os.path.join(imgs_path,self.set),self.target_files,self.category_list)
+            if self.labels[os.path.basename(image)] is None:
+                del self.labels[os.path.basename(image)]
+                self.images.remove(image)
+        breakpoint()
+    def __getitem__(self,
+                    idx):
+        import os
+        self.transform = transforms.Compose([
+            transforms.Resize((448, 448), Image.NEAREST),
+            transforms.ToTensor(),
+        ])
+        image_p = self.images[idx]
+        image = Image.open(image_p)
+        image_tensor = self.transform(image)
+        label = self.labels[os.path.basename(image_p)]
+        return image_tensor, label
 
-        
-    def extract_image(self):
-        
-        f = random.choice(self.img_files)
-        self.img_files.remove(f)
-        
-        global img
-        img = Image.open(self.img_files_path + f)
-        img_tensor = self.transform(img) # Apply the transform to the image.
-        return img_tensor, f
+    def __len__(self):
+        import os
+        return len(self.labels)
 
+def extract_json_label(chosen_image,folder_path,target_files,category_list):
+    for json_el in target_files:
+        if json_el['name'] == chosen_image:
+            img_label = json_el
+            try:
+                if img_label["labels"] is None:  # Checks if a label exists for the given image
+                    raise 'NotLabelFound'
+            except:
+                print('No label for image')
+                return None
+            target_tensor = transform_label_to_tensor(img_label,
+                                                      folder_path,
+                                                      category_list)
+            return target_tensor
 
-    def extract_json_label(self, chosen_image):
-        
-        for json_el in self.target_files:
-            if json_el['name'] == chosen_image:
-                img_label = json_el
-                try:
-                    if img_label["labels"] is None: # Checks if a label exists for the given image
-                        break
-                except:
-                    print('No label for image')
-                    break
-                target_tensor = self.transform_label_to_tensor(img_label)
-                return target_tensor
+def transform_label_to_tensor(img_label,folder_path,category_list, split_size=7):
+    import os
+    from PIL import Image
+    img = Image.open(os.path.join(folder_path,img_label['name']))
+    # Here is the information stored
+    target_tensor = torch.zeros(split_size, split_size, 5 + len(category_list))
 
-        print("No label found for " + chosen_image) # Log the image without label
-        print("")
+    for labels in range(len(img_label["labels"])):
+        # Store the category index if its contained within the category_list.
+        category = img_label["labels"][labels]["category"]
+        if category not in category_list:
+            continue
+        ctg_idx = category_list.index(category)
 
+        # Store the bounding box information and rescale it by the resize factor.
+        x1 = img_label["labels"][labels]["box2d"]["x1"] * (448 / img.size[0])
+        y1 = img_label["labels"][labels]["box2d"]["y1"] * (448 / img.size[1])
+        x2 = img_label["labels"][labels]["box2d"]["x2"] * (448 / img.size[0])
+        y2 = img_label["labels"][labels]["box2d"]["y2"] * (448 / img.size[1])
 
-    def transform_label_to_tensor(self, img_label):
-        # Here is the information stored
-        target_tensor = torch.zeros(self.split_size, self.split_size, 5+self.num_classes)
+        # Transforms the corner bounding box information into a mid bounding
+        # box information
+        x_mid = abs(x2 - x1) / 2 + x1
+        y_mid = abs(y2 - y1) / 2 + y1
+        width = abs(x2 - x1)
+        height = abs(y2 - y1)
 
-        for labels in range(len(img_label["labels"])):
-            # Store the category index if its contained within the category_list.
-            category = img_label["labels"][labels]["category"]         
-            if category not in self.category_list:
-                continue
-            ctg_idx = self.category_list.index(category)
+        # Size of a single cell
+        cell_dim = int(448 / split_size)
 
-            # Store the bounding box information and rescale it by the resize factor.
-            x1 = img_label["labels"][labels]["box2d"]["x1"] * (448/img.size[0])
-            y1 = img_label["labels"][labels]["box2d"]["y1"] * (448/img.size[1])
-            x2 = img_label["labels"][labels]["box2d"]["x2"] * (448/img.size[0])
-            y2 = img_label["labels"][labels]["box2d"]["y2"] * (448/img.size[1])
+        # Determines the cell position of the bounding box
+        cell_pos_x = int(x_mid // cell_dim)
+        cell_pos_y = int(y_mid // cell_dim)
 
-            # Transforms the corner bounding box information into a mid bounding 
-            # box information
-            x_mid = abs(x2 - x1) / 2 + x1
-            y_mid = abs(y2 - y1) / 2 + y1
-            width = abs(x2 - x1) 
-            height = abs(y2 - y1) 
+        # Check if the cell already contains an object
+        if target_tensor[cell_pos_y][cell_pos_x][0] == 1:
+            continue
 
-            # Size of a single cell
-            cell_dim = int(448 / self.split_size)
+        # Stores the information inside the target_tensor
+        target_tensor[cell_pos_y][cell_pos_x][0] = 1
+        target_tensor[cell_pos_y][cell_pos_x][1] = (x_mid % cell_dim) / cell_dim
+        target_tensor[cell_pos_y][cell_pos_x][2] = (y_mid % cell_dim) / cell_dim
+        target_tensor[cell_pos_y][cell_pos_x][3] = width / 448
+        target_tensor[cell_pos_y][cell_pos_x][4] = height / 448
+        target_tensor[cell_pos_y][cell_pos_x][ctg_idx + 5] = 1
 
-            # Determines the cell position of the bounding box
-            cell_pos_x = int(x_mid // cell_dim)
-            cell_pos_y = int(y_mid // cell_dim)
-
-            # Check if the cell already contains an object
-            if target_tensor[cell_pos_y][cell_pos_x][0] == 1:
-                continue
-            
-            # Stores the information inside the target_tensor
-            target_tensor[cell_pos_y][cell_pos_x][0] = 1
-            target_tensor[cell_pos_y][cell_pos_x][1] = (x_mid % cell_dim) / cell_dim
-            target_tensor[cell_pos_y][cell_pos_x][2] = (y_mid % cell_dim) / cell_dim
-            target_tensor[cell_pos_y][cell_pos_x][3] = width / 448
-            target_tensor[cell_pos_y][cell_pos_x][4] = height / 448
-            target_tensor[cell_pos_y][cell_pos_x][ctg_idx+5] = 1
-
-        return target_tensor
-
+    return target_tensor
