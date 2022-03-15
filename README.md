@@ -82,7 +82,19 @@ The annotations are provided in a JSON file including:
 |:--:|:--:|
 | *Number of images in each time of the day in validation data set* | *Number of images in each time of the day in test data set* |  
  
- 
+We developed a python script to check wheter all the images in the diferent sets have an available annotation.
+Here is an example of the ouput when checking for the validation data:
+
+```bash
+Correct image-label mappings: 10000
+Failed image-label mappings: 0
+```
+
+To run de script:
+
+```bash
+python data_mapping_analysis.py -j {JSON_PATH} -i {IMAGE_FOLDER_PATH}
+```
  
 ## YOLO v1: Architecture
 
