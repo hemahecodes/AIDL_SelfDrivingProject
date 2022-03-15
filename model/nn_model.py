@@ -12,7 +12,7 @@ class YoloV1Model(nn.Module):
         self.bb = bb  # Number of bounding boxes per cell
         # 448x448 input
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2,
-                               padding=3)  # 448x448x3 ->224x224x64
+                               padding=1)  # 448x448x3 ->224x224x64
         self.batchnorm1 = nn.BatchNorm2d(64)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, return_indices=False,
                                      ceil_mode=False)  # 224x224x64 ->112x112x64
