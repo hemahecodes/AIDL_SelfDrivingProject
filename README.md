@@ -73,16 +73,20 @@ The annotations are provided in a JSON file including:
  
  ### Analysis of the Datset
  
- | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/weather_plot_val.png?raw=true) | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/weather_plot.png?raw=true) |
+  | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/categories_plot_val.png?raw=true) | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/categories_plot_train.png?raw=true) |
+|:--:|:--:|
+| *Number of images in each category in validation data set* | *Number of images in each category in test data set* |
+ 
+ | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/weather_plot_val.png?raw=true) | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/weather_plot_train.png?raw=true) |
 |:--:|:--:|
 | *Number of images in each weather condition in validation data set* | *Number of images in each weather condition in test data set* |
 
 
- | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/scene_plot_val.png?raw=true) | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/scene_plot.png?raw=true) |
+ | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/scene_plot_val.png?raw=true) | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/scene_plot_train.png?raw=true) |
 |:--:|:--:|
 | *Number of images in each scene in validation data set* | *Number of images in each scene in test data set* | 
  
- | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/timeofday_plot_val.png?raw=true)  | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/timeofday_plot.png?raw=true) |
+ | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/timeofday_plot_val.png?raw=true)  | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/timeofday_plot_train.png?raw=true) |
 |:--:|:--:|
 | *Number of images in each time of the day in validation data set* | *Number of images in each time of the day in test data set* |  
  
