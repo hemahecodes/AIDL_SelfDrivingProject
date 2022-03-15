@@ -102,15 +102,17 @@ python data_mapping_analysis.py -j {JSON_PATH} -i {IMAGE_FOLDER_PATH}
  
 ## YOLO v1: Architecture
 
-You Only Look Once (YOLO) is an object detection model. The name is due to the fact that this algorithm is able to detect and recognize various objects in a picture (in real-time). It is also important to mention that nowadays there exists many versions of this model (v1, v2, v3, v4,...). We have selected the first one because of resources issues but also we considered really important having clear the main idea of this model and for so, it is enough working with YOLO v1.
+You Only Look Once (YOLO) is an object detection model developed and published in 2015 by Redmon et al. The name is due to the fact that this algorithm is able to detect and recognize various objects in a picture only looking once at the input image, and requiring a single propagation pass through the network to obtain a prediction. </p>
+It is also important to mention that nowadays there exists a few improved versions of this model, but we have selected the YOLo v1 to reduce the complexity of the project and reduce the computational resources. </p>
+YOLO uses an end-to-end convolutional neural network that takes as inputs RGB images of size 448x448. It outputs the corresponding bounding boxes and their class classification of all the detected objects in the input image.
 
-The main idea of YOLO is first dividing the input image in a fixed number SxS cells as we can see on the image (in this example S=7):
+YOLO starts dividing the input image in a fixed number SxS grid:
 
 <div align="center">
   
 | ![alt text](https://user-images.githubusercontent.com/94481725/156919394-0a670c9b-4c32-4f21-b4da-f84793e38d99.jpg) |
 |:--:|
-| *Yolo divide input image in to grid cell* |
+| *Division of input image in a 7x7 grid* |
 </div>
 
 After that, each of the SxS cells of the grid will be responsible to detect a maximum of 1 object of the image. It is important to know that we say that a cell is responsible for detecting an object if the center of the bounding box of this object is on the cell.
@@ -143,16 +145,12 @@ So, for each cell of the image you have:
 * 2 bounding boxes predicted: each bounding box has 4 numbers (center coordinates and width/height) and the number remaining is the probability of having an object inside this bounding box (P(Object)
 * Class probabilities: For each of our dataset classes, we have the conditional probability (P(class 1 | Object)... P(class C | Object))
 
-It is more clear showed in this image:
-
 <div align="center">
   
 | ![alt text](https://user-images.githubusercontent.com/94481725/156921416-21bb7fe4-35cc-48a5-878b-0a5cffa70b77.jpg) |
 |:--:|
 |*Yolo V1 predict two bounding box, inside the two bounding box it has 5 attributes this are:x_y coordinate , width, height and confidence score for each bounding box.  totaly it has 10 attributes and the remaining 20 are for class probability*.|
 </div>
-
-So, we can then understand that when we execute the model, we will obtain SxSx2 bounding boxes but then it will be compared with the ground truth bounding boxes in order to keep only the ones with the highest IoU (intersection over union).
 
 ### Loss functions
 
