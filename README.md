@@ -21,7 +21,7 @@
 * [Models Comparision](#models-comparison)
 * [Validation With Our Own Images](#validation-with-our-own-images)
 * [Conclusion And Future Work](#conclusion-and-future-work)
-* [Refernces](#references)
+* [References](#references)
 
 ## 1. Motivation
 
