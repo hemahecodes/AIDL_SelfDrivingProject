@@ -266,6 +266,13 @@ We observed this problem in it's extreme form, since the weight values resulted 
 |:--:|
 | *Example plot of exploding gradients until NaN values* |
 
+### Non-Convergence of the Loss
+
+When training the network and finally solving the exploding gradients problem, the network simply would not converge on an acceptable solution. Despite the Loss values decreasing over the training stage, they were still too high, having values over 500.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/loss_convergence.png?raw=true) |
+|:--:|
+| *Example plot of non-convergence of the loss* |
 
 ## Transfer Learning
 
