@@ -205,6 +205,7 @@ The formal formula is:
 So, finally, if we add all these losses, we will obtain the loss of YOLO v1:
 
 <div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156935209-2b71f713-9d3c-4772-9613-3c9c88e92f16.jpg) |
 |:--:|
 | *The sum of all the loss* |
