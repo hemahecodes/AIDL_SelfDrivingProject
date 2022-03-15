@@ -272,12 +272,12 @@ We observed this problem in it's extreme form, since the weight values resulted 
 ### Introduction to Transfer Learning
 First of all, we will make a very quick introduction to Transfer Learning. The main idea of TL is using models already trained on our custom dataset. In order to do that, there are some steps that should be done:
 
-1. Select a model that performs the same (or a very similar) task as we want to do in order to take advantage of the features that the pretrained model already trained
-2. Select the backbone that we want for our model (it can be useful for faster predictions, for example)
-3. Load the parameters (weights and biases) from the pretrained model: In the case of pytorch, we have some models already pretrained for object detection (for instance Faster R-CNN and RetinaNet)
-4. Finetune the model to better adapt to our dataset: Finetuning the model means changing some parameters (or even some layers) so then we can train it again with our dataset. In our particular case, we needed to adapt the pretrained model to a different number of classes (as the models were previously pretrained with COCO (91 classes) and we have less classes)
-5. Train the model again for a few epochs: The idea no is training the model again but with our own data. Normally it is not needed to do it with the whole dataset but with a fewer subset (the main features are already learnt with the pretrained model and we only want to adapt it to our dataset)
-6. The "retrained" model will now do some better predictions on our dataset
+  1. Select a model that performs the same (or a very similar) task as we want to do in order to take advantage of the features that the pretrained model already trained
+  2. Select the backbone that we want for our model (it can be useful for faster predictions, for example)
+  3. Load the parameters (weights and biases) from the pretrained model: In the case of pytorch, we have some models already pretrained for object detection (for instance Faster R-CNN and RetinaNet)
+  4. Finetune the model to better adapt to our dataset: Finetuning the model means changing some parameters (or even some layers) so then we can train it again with our dataset. In our particular case, we needed to adapt the pretrained model to a different number of classes (as the models were previously pretrained with COCO (91 classes) and we have 13 classes)
+  5. Train the model again for a few epochs: The idea is to train the model again but with our own data. Normally it is not needed to do it with the whole dataset but with a fewer subset (the main features are already learnt with the pretrained model and we only want to adapt it to our dataset)
+  6. The "retrained" model will now do some better predictions on our dataset
 
 The main advantages of doing transfer learning are the saving of computer and time resources but also the "no-need" to have huge datasets that normally are difficult/expensive to label.
 
