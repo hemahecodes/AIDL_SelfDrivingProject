@@ -65,7 +65,11 @@ The annotations are provided in a JSON file including:
 - Time of the day
 - Scene
  The video clips from where the images are extracted are filmed in different parts of the USA.
- **INSERT IMAGE LOCATIONS DATASET**
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/bdd_geo.png?raw=true) |
+|:--:|
+| *Localization of Berkeley Deep Drive image recordings* |
+
  
  ### Analysis of the Datset
  
