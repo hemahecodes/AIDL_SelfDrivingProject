@@ -3,26 +3,25 @@
 ### Advisor: Mariona Caròs
 
 # Table of contents
-1.  [Motivation](#Motivation)
-2.  [Dataset](#Dataset)
-3.  [Anlaysis of DataSet](#AnalysisofTheDataset)
-4.  [Yolo V1 Architectures](#YoloV1Architectures)
-5.  [Loss Function](#LossFunction)
-6.  [Evaluation Matrix](#EvaluationMatrix)
-7.  [Intersection Over Union](#IntersectionOverUnion)
-8.  [Mean Avergae Precision](#MeanAveragePrecision)
-9.  [compututional Resource](#CompututionalResource)
-10. [Training Yolo V1](#TrainingYoloV1)
-11. [Challenges](#Challenges)
-12. [Exploiding Gradient](#ExploidingGradient)
-13. [Transfer Learning](#TransferLearning)
-14. [Introduction To Transfer Learning](#IntroductionToTransferLearning)
-15. [Application Of Transfer Learning In This Project](#ApplicationOfTransferLearningInThisProjcet)
-16. [Models Comparision](#ModelsComparision)
-17. [Validation With Our Own Images](#ValidationWithOurOwnImages)
-18. [Inference](#Inference)
-19. [Conclusion And Future Work](#ConclusionAndFutureWork)
-20. [Refernces](#Refernces)
+1.  [Motivation](https://github.com/hemahecodes/AIDL_SelfDrivingProject#1-motivation)
+2.  [Dataset](https://github.com/hemahecodes/AIDL_SelfDrivingProject#dataset)
+3.  [Anlaysis of the Dataset](https://github.com/hemahecodes/AIDL_SelfDrivingProject#analysis-of-the-datset)
+4.  [Yolo V1 Architecture](https://github.com/hemahecodes/AIDL_SelfDrivingProject#yolo-v1-architecture)
+5.  [Loss Function](https://github.com/hemahecodes/AIDL_SelfDrivingProject#loss-functions)
+6.  [Evaluation Metrics](https://github.com/hemahecodes/AIDL_SelfDrivingProject#evaluation-metrics)
+7.  [Intersection Over Union](https://github.com/hemahecodes/AIDL_SelfDrivingProject#intersection-over-union-iou)
+8.  [Mean Avergae Precision](https://github.com/hemahecodes/AIDL_SelfDrivingProject#mean-average-precision-map)
+9.  [compututional Resources](https://github.com/hemahecodes/AIDL_SelfDrivingProject#computational-resources)
+10. [Training Yolo V1](https://github.com/hemahecodes/AIDL_SelfDrivingProject#training-yolo-v1)
+11. [Challenges](https://github.com/hemahecodes/AIDL_SelfDrivingProject#challenges)
+12. [Exploiding Gradient](https://github.com/hemahecodes/AIDL_SelfDrivingProject#exploding-gradients)
+13. [Transfer Learning](https://github.com/hemahecodes/AIDL_SelfDrivingProject#transfer-learning)
+14. [Introduction To Transfer Learning](https://github.com/hemahecodes/AIDL_SelfDrivingProject#introduction-to-transfer-learning)
+15. [Application of Transfer Learning](https://github.com/hemahecodes/AIDL_SelfDrivingProject#application-of-transfer-learning-in-this-project)
+16. [Models Comparision](https://github.com/hemahecodes/AIDL_SelfDrivingProject#models-comparison)
+17. [Validation With Our Own Images](https://github.com/hemahecodes/AIDL_SelfDrivingProject#validation-with-our-own-images)
+19. [Conclusion And Future Work](https://github.com/hemahecodes/AIDL_SelfDrivingProject#conclusion-and-future-work)
+20. [Refernces](https://github.com/hemahecodes/AIDL_SelfDrivingProject#references)
 
 ## 1. Motivation
 
@@ -90,24 +89,34 @@ The annotations are provided in a JSON file including:
 You Only Look Once (YOLO) is an object detection model. The name is due to the fact that this algorithm is able to detect and recognize various objects in a picture (in real-time). It is also important to mention that nowadays there exists many versions of this model (v1, v2, v3, v4,...). We have selected the first one because of resources issues but also we considered really important having clear the main idea of this model and for so, it is enough working with YOLO v1.
 
 The main idea of YOLO is first dividing the input image in a fixed number SxS cells as we can see on the image (in this example S=7):
+
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156919394-0a670c9b-4c32-4f21-b4da-f84793e38d99.jpg) |
 |:--:|
 | *Yolo divide input image in to grid cell* |
+</div>
 
 After that, each of the SxS cells of the grid will be responsible to detect a maximum of 1 object of the image. It is important to know that we say that a cell is responsible for detecting an object if the center of the bounding box of this object is on the cell.
 
 On the following example, the cell (4,3) would be the responsible for detecting the bike
 
-
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156919554-b71cf241-c44f-4c2a-a214-f4bb080f30e9.jpg) |
 |:--:|
 | *Each cell responsible for detecting a maximum of 1 object in the image* |
+</div>
 
 In order to do this, YOLO v1 has an architecture consisting of 6 blocks combining convolutional layers with maxpooling layers and followed by 2 fully connected layers. Furthermore it applies the Leaky ReLu activation function after all layers except for the last one and uses dropout between the two fully connected layers in order to tackle overfitting.
 
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156921245-b489fc5f-b218-41b8-9c38-27ca6a868e7b.jpg) |
 |:--:|
 | *Yolo V1 Architecture* |
+</div>
+
 The dimension of the last fully connected layer would be SxSx(B * 5 + C) where:
 
 * S: Number of cells in which input image is divided
@@ -120,10 +129,12 @@ So, for each cell of the image you have:
 
 It is more clear showed in this image:
 
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156921416-21bb7fe4-35cc-48a5-878b-0a5cffa70b77.jpg) |
 |:--:|
 |*Yolo V1 predict two bounding box, inside the two bounding box it has 5 attributes this are:x_y coordinate , width, height and confidence score for each bounding box.  totaly it has 10 attributes and the remaining 20 are for class probability*.|
-
+</div>
 
 So, we can then understand that when we execute the model, we will obtain SxSx2 bounding boxes but then it will be compared with the ground truth bounding boxes in order to keep only the ones with the highest IoU (intersection over union).
 
@@ -134,42 +145,59 @@ The loss function in YOLO v1 is not one of the classic losses in neural networks
 
 1.1. *Bounding box centroid loss*: This will be the distance of the center of the predicted bounding box and the ground truth bounding box but it is important to keep in mind that it is only computed when there actually exists an object on the studied cell. It is computed as follows: 
 
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156934299-24356708-fede-4f9d-a460-eebf373cfcfc.jpg) |
 |:--:|
 | *Distance of the centre of predicted bounding box and ground truth bounding box* |
-
+</div>
+  
 1.2. *Bounding box size loss*: This one is computed as the distance of the width and height of the predicted bounding box and the ground truth bounding box but it is important to keep in mind that it is only computed when there actually exists an object on the studied cell. In this case we have to keep in mind also that it is computed the sqrt because otherwise larger bounding boxes would have more importance on this loss.
 
 The formal formula is:
 
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156934449-92bfa605-1b96-4941-ad34-99e76fc6b261.jpg) |
 |:--:|
 |*Distance of width and height of predicted bounding box and ground truth bounding box*|
+</div>
 
 **2. Object loss**: This loss refers to the error that is done when assigning object probability and in the ground-truth there is an object. In other words, if there is an object on a particular cell, which is the difference between the P(Object) and 1? It is computed as follows:
 
-
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156935053-01381f1d-f6a0-4d12-a2c7-4b13d3d37aa1.jpg) |
 |:--:|
 | *Centre cell is responsible for detcting an object Po for center cell is 1* |
-
+</div>
+  
 **3. No Object loss**: This loss refers to the error that is done when assigning object probability and in the ground-truth there is not any object. In other words, if there is not any object on a particular cell, which is the difference between the P(Object) and 0? It is computed as follows:
+
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156924120-642363df-40cd-4245-b736-a21a5c3c70d9.jpg) |
 |:--:|
 | *Corner cell they are not responsible for detecting  an object po for corner cell is 0* |
+</div>
 
 **4. Class loss**: In this last loss, we are computing the error made when assigning a class to a detected object, so it is pretty similar as the previous loss but in this case, we are looking at the P(Class i | Object). The formula is:
 
+<div align="center">
+  
 | ![alt text](https://user-images.githubusercontent.com/94481725/156924363-1f7bb066-d6ef-4a7f-ae6d-b73be7d1e70c.jpg) |
 |:--:|
 | *Error made when assigning a class to a detected object*|
+</div>
 
 So, finally, if we add all these losses, we will obtain the loss of YOLO v1:
 
+<div align="center">
 | ![alt text](https://user-images.githubusercontent.com/94481725/156935209-2b71f713-9d3c-4772-9613-3c9c88e92f16.jpg) |
 |:--:|
 | *The sum of all the loss* |
-
+</div>
+  
 ## Evaluation Metrics
 
 We used several metrics to evaluate our object detection model.
@@ -178,10 +206,12 @@ We used several metrics to evaluate our object detection model.
 Intersection over Union is a metric used to measure the overlap between two vounding voxes.
 If the prediction is correct, the Iou is equal to 1. Therefore, the lower the IoU, the worse the prediction result.
 
+<div align="center">
+  
 | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/IoU.png?raw=true) |
 |:--:|
 | *Computation of Intersection over Union* |
-
+</div>
 
 In our project we used the IoU to classify the predictions as True Positives (TP), False Positives (FP) and False Negatives (FN):
 - IoU >= 0.5: The prediction is classified as a True Positive (TP).
@@ -191,10 +221,13 @@ In our project we used the IoU to classify the predictions as True Positives (TP
 To evaluate the performance of the model, we used the previous tP, FP and FN classifications to compute the precision and recall of the model.
 On the one hande, the **precision** measures how accurate are our predictions, thus, the percentage of predictions that are correct. On the other hand, **recall** measures how good the model finds all the positives in a set of predictions.
 
+<div align="center">
+  
 | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/precision_recall.png?raw=true) |
 |:--:|
 | *Computation of Precision and Recall* |
-
+</div>
+  
 ### Mean Average Precision (mAP)
 Average precision computes the average precision values for recall value oer 0 to 1. 
 To compute the Average Precision we find the area under the curve of the precision-recall curve. 
@@ -240,34 +273,43 @@ The main advantages of doing transfer learning are the saving of computer and ti
 
 As we have used the Pytorch environment on this project, we have taken advantage of some models already pretrained on pytorch and COCO dataset. So, we have selected 2 of the best performing models:
 
-* Faster R-CNN: This is the last algorithm of the trilogy (R-CNN, Fast R-CNN and Faster R-CNN) and the main idea is that there are 2 subnetworks (2-stage object detector):
+* **Faster R-CNN:** This is the last algorithm of the trilogy (R-CNN, Fast R-CNN and Faster R-CNN) and the main idea is that there are 2 subnetworks (2-stage object detector):
   
   1. Region Proposal Network: This network will be the responsible of purposing different regions in which may exist an object
   
   2. Classifier: Here, the object classification will be done once the RPN has send to it some region proposals
 
-![alt text](https://user-images.githubusercontent.com/94481725/156935475-d38f8f50-90e9-482b-99c5-34bf1f1b7588.jpg)
+<div align="center">
+  
+|![alt text](https://user-images.githubusercontent.com/94481725/156935475-d38f8f50-90e9-482b-99c5-34bf1f1b7588.jpg)|
+|:--:|
+| ** Faster R-CNN architecture ** |
+</div>
 
+* **RetinaNet:** This is a one-stage object detection model that utilizes a focal loss function to address class imbalance during training.
 
-* RetinaNet: This is a one-stage object detection model that utilizes a focal loss function to address class imbalance during training.
-
-![alt text](https://user-images.githubusercontent.com/94481725/156935669-17567676-0f0e-4033-ac00-cc54477dc0e5.jpg)
+<div align="center">
+  
+|![alt text](https://user-images.githubusercontent.com/94481725/156935669-17567676-0f0e-4033-ac00-cc54477dc0e5.jpg)|
+|:--:|
+| ** RetinaNet architecture ** |
+</div>
 
 The Transfer Learning codes are on the directory *transfer_learning* and in order to reproduce them, we have a mini subset of our dataset in *transfer_learning/data*. We can do the first part of "retraining the models" using the codes *train_FasterRCNN.py* and *train_RetinaNet.py*. 
 
 On the first one, 3 arguments are needed: 
 
-1. "b": It refers to the backbone used. Possibilities:
+1. **"b"**: It refers to the backbone used. Possibilities:
 
-  1.1 b=1: MobileNetV3: Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone
+  - **b=1:** MobileNetV3: Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone
   
-  1.2 b=2: ResNet50: Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
+  - **b=2:** ResNet50: Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
   
-  1.3 b=3: MobileNetV3-320: Constructs a low resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone tunned for mobile use-cases.
+  - **b=3:** MobileNetV3-320: Constructs a low resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone tunned for mobile use-cases.
   
-2. "c": It refers to the number of classes used (on the data subset we have 11 classes)
+2. **"c":** It refers to the number of classes used (on the data subset we have 11 classes)
  
-3. "e": Number of epochs for training the model
+3. **"e":** Number of epochs for training the model
 
 So, the main steps would be:
 
@@ -290,33 +332,51 @@ python inference_FasterRCNN_resnet50.py -i "data/DeepDriving/test/fd5bae34-d63db
 
 The image with the bounding boxes of the objects detected will be automatically showed and saved on *predictions/prediction_FastRCNN-ResNet50fd5bae34-d63db3d7.jpg*. In this particular case, the result would be:
 
-![alt text](https://user-images.githubusercontent.com/94481725/156932373-8892b364-6e24-4b0f-b2ab-65c55c0e201b.jpg)
-
+<div align="center">
+  
+|![alt text](https://user-images.githubusercontent.com/94481725/156932373-8892b364-6e24-4b0f-b2ab-65c55c0e201b.jpg)|
+|:--:|
+| ** Transfer learning result example ** |
+</div>
 So, we can see that it has worked pretty well. In general, we have seen the best results when using FastRCNN with ResNet50 backbone and the worst with Fast R-CNN and MobileNet v3-320. In fact, if we compare this image predicted with the other pretrained models:
 
 **FastRCNN with MobileNet v3**
-
-![alt text](https://user-images.githubusercontent.com/94481725/156932786-ebf34c90-201e-4dfd-8faf-3e70467aeb49.jpg)
+<div align="center">
+  
+|![alt text](https://user-images.githubusercontent.com/94481725/156932786-ebf34c90-201e-4dfd-8faf-3e70467aeb49.jpg)|
+|:--:|
+| ** FastRCNN Prediction with MobileNet v3** |
+</div>
 
 **FastRCNN with MobileNet v3-320**
-
-![alt text](https://user-images.githubusercontent.com/94481725/156933141-8235ec4c-92e9-445c-bfa9-9ee19f29a083.jpg)
+<div align="center">
+  
+|![alt text](https://user-images.githubusercontent.com/94481725/156933141-8235ec4c-92e9-445c-bfa9-9ee19f29a083.jpg)|
+|:--:|
+| ** FastRCNN Prediction with MobileNet v3-320** |
+</div>
 
 **FastRCNN with ResNet50**
-
-![alt text](https://user-images.githubusercontent.com/94481725/156933380-d23eb36c-e577-4f0c-a8cc-8ea7df6ab430.jpg)
+<div align="center">
+  
+|![alt text](https://user-images.githubusercontent.com/94481725/156933380-d23eb36c-e577-4f0c-a8cc-8ea7df6ab430.jpg)|
+|:--:|
+| ** FastRCNN Prediction with ResNet50** |
+</div>
 
 **RetinaNet with ResNet50**
 
-![alt text](https://user-images.githubusercontent.com/94481725/156934024-869e4bc5-58d8-4c49-b34d-696e32e5c25b.jpg)
-
+<div align="center">
+  
+| ![alt text](https://user-images.githubusercontent.com/94481725/156934024-869e4bc5-58d8-4c49-b34d-696e32e5c25b.jpg) |
+|:--:|
+| ** RetinaNet Prediction with ResNet50** |
+</div>
 
 
 ## Models comparison
 
 ## Validation with our own images
-
-## Inference
 
 ## Conclusion and future work
  In our project we implemented and trained a one stage detector YOLO and two stage detector Faster R-CNN on the BDD 100K dataset in the context of of autonomous vehicles.
@@ -332,7 +392,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
  **Generally we would need higher precision and real-time driving perception system that can assist the autonomous vehicle in making the reasonable decision while driving safely.**
 
 
-## 9. References
+## References
 
 Gene Lewis. Object detection for autonomous vehicles, 2014.
 
