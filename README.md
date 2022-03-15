@@ -295,7 +295,7 @@ As we have used the Pytorch environment on this project, we have taken advantage
   
 |![alt text](https://user-images.githubusercontent.com/94481725/156935475-d38f8f50-90e9-482b-99c5-34bf1f1b7588.jpg)|
 |:--:|
-| ** Faster R-CNN architecture ** |
+| *Faster R-CNN architecture* |
 </div>
 
 * **RetinaNet:** This is a one-stage object detection model that utilizes a focal loss function to address class imbalance during training.
@@ -304,7 +304,7 @@ As we have used the Pytorch environment on this project, we have taken advantage
   
 |![alt text](https://user-images.githubusercontent.com/94481725/156935669-17567676-0f0e-4033-ac00-cc54477dc0e5.jpg)|
 |:--:|
-| ** RetinaNet architecture ** |
+| *RetinaNet architecture* |
 </div>
 
 The Transfer Learning codes are on the directory *transfer_learning* and in order to reproduce them, we have a mini subset of our dataset in *transfer_learning/data*. We can do the first part of "retraining the models" using the codes *train_FasterRCNN.py* and *train_RetinaNet.py*. 
@@ -348,7 +348,7 @@ The image with the bounding boxes of the objects detected will be automatically 
   
 |![alt text](https://user-images.githubusercontent.com/94481725/156932373-8892b364-6e24-4b0f-b2ab-65c55c0e201b.jpg)|
 |:--:|
-| ** Transfer learning result example ** |
+| *Transfer learning result example* |
 </div>
 So, we can see that it has worked pretty well. In general, we have seen the best results when using FastRCNN with ResNet50 backbone and the worst with Fast R-CNN and MobileNet v3-320. In fact, if we compare this image predicted with the other pretrained models:
 
@@ -357,7 +357,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
   
 |![alt text](https://user-images.githubusercontent.com/94481725/156932786-ebf34c90-201e-4dfd-8faf-3e70467aeb49.jpg)|
 |:--:|
-| ** FastRCNN Prediction with MobileNet v3** |
+| *FastRCNN Prediction with MobileNet v3* |
 </div>
 
 **FastRCNN with MobileNet v3-320**
@@ -365,7 +365,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
   
 |![alt text](https://user-images.githubusercontent.com/94481725/156933141-8235ec4c-92e9-445c-bfa9-9ee19f29a083.jpg)|
 |:--:|
-| ** FastRCNN Prediction with MobileNet v3-320** |
+| *FastRCNN Prediction with MobileNet v3-320* |
 </div>
 
 **FastRCNN with ResNet50**
@@ -373,7 +373,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
   
 |![alt text](https://user-images.githubusercontent.com/94481725/156933380-d23eb36c-e577-4f0c-a8cc-8ea7df6ab430.jpg)|
 |:--:|
-| ** FastRCNN Prediction with ResNet50** |
+| *FastRCNN Prediction with ResNet50* |
 </div>
 
 **RetinaNet with ResNet50**
@@ -382,7 +382,7 @@ So, we can see that it has worked pretty well. In general, we have seen the best
   
 | ![alt text](https://user-images.githubusercontent.com/94481725/156934024-869e4bc5-58d8-4c49-b34d-696e32e5c25b.jpg) |
 |:--:|
-| ** RetinaNet Prediction with ResNet50** |
+| *RetinaNet Prediction with ResNet50* |
 </div>
 
 
