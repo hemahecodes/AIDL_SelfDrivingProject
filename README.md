@@ -103,6 +103,13 @@ To run de script:
 ```bash
 python data_mapping_analysis.py -j {JSON_PATH} -i {IMAGE_FOLDER_PATH}
 ```
+
+In addition, we provide a python script to analyse the distribution of annotation in the Berkeley Deep Drive dataset and generate the previous plots.
+To run it:
+
+```bash
+python db_analyse.py -j {JSON_PATH}
+```
  
 ## YOLO v1: Architecture
 
