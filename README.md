@@ -66,7 +66,7 @@ The annotations are provided in a JSON file including:
 - Scene
  The video clips from where the images are extracted are filmed in different parts of the USA.
 
-| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/bdd_geo.png?raw=true) |
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/bdd_geo.jpg?raw=true) |
 |:--:|
 | *Localization of Berkeley Deep Drive image recordings* |
 
