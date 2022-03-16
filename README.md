@@ -18,6 +18,7 @@
 * [Transfer Learning](#transfer-learning)
      * [Introduction To Transfer Learning](#introduction-to-transfer-learning)
      * [Application of Transfer Learning](#application-of-transfer-learning-in-this-project)
+     * [Transfer Learning Code](#transfer-learning-code)
 * [Models Comparision](#models-comparison)
 * [Validation With Our Own Images](#validation-with-our-own-images)
 * [Conclusion And Future Work](#conclusion-and-future-work)
@@ -328,85 +329,117 @@ As we have used the Pytorch environment on this project, we have taken advantage
 | *RetinaNet architecture* |
 </div>
 
-The Transfer Learning codes are on the directory *transfer_learning* and in order to reproduce them, we have a mini subset of our dataset in *transfer_learning/data*. We can do the first part of "retraining the models" using the codes *train_FasterRCNN.py* and *train_RetinaNet.py*. 
+### Transfer Learning Code
+The Transfer Learning code is organized in this Google Colab in order to be more user-friendly. If we take a look at the colab, we will find it divided in 6 sections:
 
-On the first one, 3 arguments are needed: 
-
-1. **"b"**: It refers to the backbone used. Possibilities:
-
-  - **b=1:** MobileNetV3: Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone
-  
-  - **b=2:** ResNet50: Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
-  
-  - **b=3:** MobileNetV3-320: Constructs a low resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone tunned for mobile use-cases.
-  
-2. **"c":** It refers to the number of classes used (on the data subset we have 11 classes)
+1. Prepare environment 
  
-3. **"e":** Number of epochs for training the model
+	In this first step, the idea was preparing the environment so that the code is perfectly executable. This means that this piece of code is responsible to download the needed data (images and annotations) but also installing all the needed packages to run each one of the cells in the notebook.
 
-So, the main steps would be:
+	A small subset of the data has been prepared specifically for training and validating these models. It is important to note that the training dataset created for this purpose is a subset of the whole Deep Driving training dataset. Also, note that the training dataset is very small (120 images) because it is enough for understand perfectly how transfer learning works and for obtaining quite good results as we will see later.
 
-```
-git clone https://github.com/hemahecodes/AIDL_SelfDrivingProject
-cd transfer_learning
-python train_FasterRCNN.py -b 1 -c 11 -e 20
-```
+2. Define DeepDriving Dataset Class
 
-This last instructions will train and save the model with the trained weights in *transfer_learning/models*, in the ".pth" file it will be specified the pretrained model and backbone used.
-
-On the case of RetinaNet, we do not have to specify the backbone (as the only available is ResNet50) so we only should give the number of classes and epochs.
-
-In order to do inference with the "retrained" models, we can use the *inference....py* scripts as follows:
-
-```
-python inference_FasterRCNN_resnet50.py -i "data/DeepDriving/test/fd5bae34-d63db3d7.jpg"
-```
+	In order to pass the data through the data loader and the model, a new class is created where all the Dataset details are specified. 
+	
+	As always, this class has 2 main functions:
+	
+	* \__init\__ : Here, the images and json file are opened and saved as self objects
+	
+	* \__getitem\__: This is the most important part of the DeepDrivingDataset class, where the bounding boxes and labels are saved but also where the transformations are applied to the images. \__getitem\__ function will be the responsible to returning the images and targets.
+	
+	In order to better understand the code, here we have an example of annotation:
 
 
-The image with the bounding boxes of the objects detected will be automatically showed and saved on *predictions/prediction_FastRCNN-ResNet50fd5bae34-d63db3d7.jpg*. In this particular case, the result would be:
+			{"name": "4c2cd55b-31488766.jpg",							
+				"attributes": {							
+					"weather": "clear",						
+					"scene": "city street",						
+					"timeofday": "daytime"						
+					},							
+				"timestamp": 10000,							
+				"labels": [{							
+					"category": "traffic light",						
+					"attributes": {						
+						"occluded": false,					
+						"truncated": false,					
+						"trafficLightColor": "green"					
+						},						
+					"manualShape": true,						
+					"manualAttributes": true,						
+					"box2d": {						
+						"x1": 464.326734,					
+						"y1": 243.551131,					
+						"x2": 474.245106,					
+						"y2": 270.00012					
+						},						
+					"id": 825728						
+					}]							
+				}
+	
+			
+	So, the annotations will be found on 'labels' *section* that's why we have the code
 
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156932373-8892b364-6e24-4b0f-b2ab-65c55c0e201b.jpg)|
-|:--:|
-| *Transfer learning result example* |
-</div>
-So, we can see that it has worked pretty well. In general, we have seen the best results when using FastRCNN with ResNet50 backbone and the worst with Fast R-CNN and MobileNet v3-320. In fact, if we compare this image predicted with the other pretrained models:
+	```
+	self.annotations.append(v["labels"])
+	```	
+	which creates a list with all the annotations found in an image ('v').
+	
+	On the following piece of code, we can see how boxes and categories are saved (looking for them under the labels 'box2d' and 'category' respectively)
+	```
+        for labels in self.annotations[idx]:
+          if 'box2d' in labels:
+            annotation = labels['box2d']
+            lab = labels['category']
+	    	categories.append(self.label2idx[lab])
+            #select the corners of the boxes for each axis. it should be a list with 4 values: 2 coordinates.
+            boxes.append([annotation["x1"],annotation["y1"],annotation["x2"],annotation["y2"]]) 
+	```	
+	
+	Finally, a dictionary 'target' is created containing boxes and labels for the studied image and the image is converted to tensor (in order to apply the model directly to that).
+			
+3. Download the Pretrained model
 
-**FastRCNN with MobileNet v3**
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156932786-ebf34c90-201e-4dfd-8faf-3e70467aeb49.jpg)|
-|:--:|
-| *FastRCNN Prediction with MobileNet v3* |
-</div>
+	We could say that this section is one of the most important parts of the code. Here, the idea is downloading pretrained models that are in PyTorch and adapt them to our dataset. In order to do that, we have chosen 2 models:
+	
+	3.1. Faster-RCNN: As we have seen this model on the Postgraduate Lessons, we know that this model works pretty good and we had the advantage that it is already pretrained in PyTorch with different backbones. But before we continue, let's define better what is a backbone of the object detection model:
 
-**FastRCNN with MobileNet v3-320**
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156933141-8235ec4c-92e9-445c-bfa9-9ee19f29a083.jpg)|
-|:--:|
-| *FastRCNN Prediction with MobileNet v3-320* |
-</div>
+	**A backbone is a pre-trained model (it can be pre-trained on ImageNet, ResNet50, MobileNet...) that works as a feature extractor, which gives to the model a feature map representation of the input.** So, once the model has the backbone defined, it has to perform the actual task which is object detection in our case. Summarizing, a backbone is very useful to make the network learn faster the object detection task.
+	
+	3.2. RetinaNet: We also used this model but in this case we only have the pretrained model with ResNet50 backbone
 
-**FastRCNN with ResNet50**
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156933380-d23eb36c-e577-4f0c-a8cc-8ea7df6ab430.jpg)|
-|:--:|
-| *FastRCNN Prediction with ResNet50* |
-</div>
-
-**RetinaNet with ResNet50**
-
-<div align="center">
-  
-| ![alt text](https://user-images.githubusercontent.com/94481725/156934024-869e4bc5-58d8-4c49-b34d-696e32e5c25b.jpg) |
-|:--:|
-| *RetinaNet Prediction with ResNet50* |
-</div>
+	It is important to note that in order to run this peace of code, 2 parameters need to be defined:
+	* backb: 1, 2 or 3 for "MobileNet v2", "ResNet 50" or "MobileNet v2-320" respectively
+	* pret_model: "FasterRCNN" or "RetinaNet" depending on the pretrained network for object detection that we want to use
 
 
+4. Create the training function
+
+	The training function is surprisingly one of the simplest functions in this notebook. It is only needed to take into account that we have to perform the usual steps:
+	* Set optimizer gradients to zero before starting backbpropagtion
+	* Save loss from model in order to monitor the loss evolution
+	* Perform backpropagation to update the weights and biases
+	* Do an step of the optimizer so the optimizer iterates over all parameters
+	
+5. Create the evaluation function
+
+	The evaluation function is much more complicated than the training one because here we compute different metrics to obtain the Mean Average Precision (mAp) of each epoch. Step by step:
+	* Use the model to obtain the bounding boxes predicted
+	* Perform NonMaximumSupression (object detection technique that aims at selecting the best bounding box out of a set of overlapping boxes) on the Bounding Boxes predicted so we do not have a lot of overlaping bboxes. In order to do NmS, we use an IoU threshold of 0.2 but it can be changed.
+	* After that, we select boxes, scores and labels of the filtered bounding boxes and we start working only with this subset.
+	* Next, a loop is done over the 13 categories of our dataset. For each category, we see if there are Ground Truth Bounding Boxes and Predicted Bounding Boxes. If it is the case, we compute the IoU between all the GT boxes vs all the predicted ones and we keep the one with highest IoU.
+	* If the highest IoU is greater than the IoU threshold defined, we have a True Positive; otherwise, we will have a False Positive.
+	* We compute the total of TP and FP for each class and then the recall and precision.
+	* Then, we use the function `torch.trapz` in order to compute the area under the curve of precision-recall. The average of all the areas (one for each category) is computed and showed as the Average Precision of the current image.
+	* At the end of the epoch, the Mean of the Average Precision of all the images is computed and printed as mAP of the epoch.
+	
+8. Training Loop (with evaluation included)
+
+	Finally we have the training loop, where for each epoch it performs the training (setting the model to model.train() and using the `train` function explained on point 4 and the validation (setting the model to model.eval() and using the `evaluate`function explained on point 5.
+	
+	After each epoch, the model is saved on the folder 'models' and the predictions on a folder called predictions_epochx and the file names will specify which model has been used.
+	
+	
 ## Models comparison
 
 ## Validation with our own images
