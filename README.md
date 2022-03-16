@@ -261,8 +261,11 @@ To compute the Average Precision we find the area under the curve of the precisi
 
 ## Computational Resources
 
-**ADD NVIDIA-SMI OUTPUT AND EXLPAIN NUMBER OF CPUS, TYPE OF GPU ETC.**
+The model was training using a GPU NVIDIA GeForce GTX 1080 Ti, with 10 GB of memory. Also, 2 CPUs were allocated and each CPU had 15 GB of memory.
 
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/resources.png?raw=true) |
+|:--:|
+| *GPU Information* |
 
 ## Training YOLO v1
 
