@@ -289,6 +289,22 @@ When training the network and finally solving the exploding gradients problem, t
 |:--:|
 | *Example plot of non-convergence of the loss* |
 
+### Predictions Position
+
+After training for a few epochs, we noticed that the  predictions of the bounding boxes where only placed on the sides of the image, no predictions were made on the center of the image. 
+This situation was repeated among all of the images that we checked the model with. 
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/pred_pos_before.png?raw=true) |
+|:--:|
+| *Example of image with bounding box predictions only on the sides.* |
+
+We suggested that the padding on the first convolutional layer of the model could be too big, and because of that the model was mainly focusing on the sides of the images.
+After changing the padding of the first layer, we observed that there were predictions also on the center of the images.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/pred_pos_after.png?raw=true) |
+|:--:|
+| *Example of image with bounding box predictions on the center.* |
+
 ## Transfer Learning
 
 ### Introduction to Transfer Learning
