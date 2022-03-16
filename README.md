@@ -278,6 +278,26 @@ python -c 'import torch; print(torch.cuda.is_available())'
 python main.py -i {PATH TO IMAGEçS -j {PATH_TO_LABELS}
 ````
 
+The following optional arguments can be defined when running the code:
+
+```bash
+usage: main.py [-h] -j JSON_PATH -i IMGS [-b BATCH_SIZE] [-lr LEARNING_RATE] [-e EPOCHS]
+
+Code to Train and Evaluate an 2D Object Detection Model (YOLO V1).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -j JSON_PATH, --json_path JSON_PATH
+                        Path to folder with JSON data.
+  -i IMGS, --imgs IMGS  Path to foler with images. This path should contain 3 folder with val, train and test sets.
+  -b BATCH_SIZE, --batch_size BATCH_SIZE
+                        Batch Size. Default is 32.
+  -lr LEARNING_RATE, --learning_rate LEARNING_RATE
+                        Learning Rate. Default is 0.001
+  -e EPOCHS, --epochs EPOCHS
+                        number of epochs. Default is 100.
+```
+
 A slurm file example when executing in an HPC machine.
 
 ```bash
