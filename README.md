@@ -450,20 +450,20 @@ In this section we will compare the different pretrained models used with transf
 
 We will start with the training results. We have trained the 4 models/backbones with 120 images, 3 epochs and a batch size of 5. So, first we will compare the different backbones used for FasterRCNN because we have the same loss types here:
 
-| Loss Type           	| Epoch     | FRCNN-MNetV3   | FRCNN-ResNet50 | FRCNN-MNetV3-320 | RetinaNet-ResNet50   |
-| ----------------------| --------  | -------------- | -------------- | -----------------| -------------------- | 
-| Classifier Loss  	| Epoch 1   | 0.782	     | 0.806	      | 0.699	  	 | 0.628                |
-| Classifier Loss  	| Epoch 2   | 0.378	     | 0.444	      | 0.370	  	 | 0.440                |
-| Classifier Loss  	| Epoch 3   | 0.333	     | 0.352	      | 0.206	  	 | 0.303                |
-| Box Regression Loss  	| Epoch 1   | 0.544	     | 0.611	      | 0.298	  	 | 0.388                |
-| Box Regression Loss  	| Epoch 2   | 0.446	     | 0.541	      | 0.258	  	 | 0.332                |
-| Box Regression Loss  	| Epoch 3   | 0.420	     | 0.524	      | 0.158	  	 | 0.305                |
-| ObjectNess Loss  	| Epoch 1   | 0.130	     | 0.226	      | 0.105	  	 | -                    |
-| ObjectNess Loss  	| Epoch 2   | 0.071	     | 0.088	      | 0.092	  	 | -                    |
-| ObjectNess Loss  	| Epoch 3   | 0.055	     | 0.058	      | 0.102	  	 | -                    |
-| RPN Loss	  	| Epoch 1   | 0.125	     | 0.237	      | 0.161	  	 | -                    |
-| RPN Loss	  	| Epoch 2   | 0.112	     | 0.183	      | 0.145	  	 | -                    |
-| RPN Loss	  	| Epoch 3   | 0.103	     | 0.163	      | 0.130	  	 | -                    |
+| Loss Type           | Epoch     | FRCNN-MNetV3 | FRCNN-ResNet50 | FRCNN-MNetV3-320 | RetinaNet-ResNet50   |
+| --------------------| --------  | -------------| -------------- | -----------------| -------------------- | 
+| Classifier Loss     | Epoch 1   | 0.782	 | 0.806	  | 0.699	     | 0.628                |
+| Classifier Loss     | Epoch 2   | 0.378	 | 0.444	  | 0.370	     | 0.440                |
+| Classifier Loss     | Epoch 3   | 0.333	 | 0.352	  | 0.206	     | 0.303                |
+| Box Regression Loss | Epoch 1   | 0.544	 | 0.611	  | 0.298	     | 0.388                |
+| Box Regression Loss | Epoch 2   | 0.446	 | 0.541	  | 0.258	     | 0.332                |
+| Box Regression Loss | Epoch 3   | 0.420	 | 0.524	  | 0.158	     | 0.305                |
+| ObjectNess Loss     | Epoch 1   | 0.130	 | 0.226	  | 0.105	     |   -                  |
+| ObjectNess Loss     | Epoch 2   | 0.071	 | 0.088	  | 0.092	     |   -                  |
+| ObjectNess Loss     | Epoch 3   | 0.055	 | 0.058	  | 0.102	     |   -                  |
+| RPN Loss	      | Epoch 1   | 0.125	 | 0.237	  | 0.161	     |   -                  |
+| RPN Loss	      | Epoch 2   | 0.112	 | 0.183	  | 0.145	     |   -                  |
+| RPN Loss	      | Epoch 3   | 0.103	 | 0.163	  | 0.130	     |   -                  |
 
 We can see that all the losses tend to decrease but we can highlight the classifier loss which normally tends to decrease around a 50% from the first epoch to the second one. Also, we should note that in general, all the losses are really small, this is due to the fact that these models are already trained so it is normal that we do not have very high losses. Another interesting thing to see is that the RPN and box regression losses are the ones that decrease more slowly, it can also be happening because the models already know to detect objects but they have to learn the exact classes which may be different from the ones used in the pretrained models.
 
