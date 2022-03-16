@@ -239,6 +239,7 @@ Forward/backward pass size (MB): 316.92
 Params size (MB): 326.65
 Estimated Total Size (MB): 645.87
 ----------------------------------------------------------------
+```
 
 
 <div align="center">
