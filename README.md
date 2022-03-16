@@ -11,13 +11,16 @@
 * [Evaluation Metrics](#evaluation-metrics)
      * [Intersection Over Union](#intersection-over-union-iou)
      * [Mean Avergae Precision](#mean-average-precision-map)
-* [Compututional Resources](#computational-resources)
+* [Computational Resources](#computational-resources)
+* [How To Run](#how-to-run)
 * [Training Yolo V1](#training-yolo-v1)
      * [Challenges](#challenges)
      * [Exploiding Gradients](#exploding-gradients)
+     * [Predictions Positionins](#predictions-position)
 * [Transfer Learning](#transfer-learning)
      * [Introduction To Transfer Learning](#introduction-to-transfer-learning)
      * [Application of Transfer Learning](#application-of-transfer-learning-in-this-project)
+     * [Transfer Learning Code](#transfer-learning-code)
 * [Models Comparision](#models-comparison)
 * [Validation With Our Own Images](#validation-with-our-own-images)
 * [Conclusion And Future Work](#conclusion-and-future-work)
@@ -102,6 +105,13 @@ To run de script:
 
 ```bash
 python data_mapping_analysis.py -j {JSON_PATH} -i {IMAGE_FOLDER_PATH}
+```
+
+In addition, we provide a python script to analyse the distribution of annotation in the Berkeley Deep Drive dataset and generate the previous plots.
+To run it:
+
+```bash
+python db_analyse.py -j {JSON_PATH}
 ```
  
 ## YOLO v1: Architecture
@@ -253,8 +263,62 @@ To compute the Average Precision we find the area under the curve of the precisi
 
 ## Computational Resources
 
-**ADD NVIDIA-SMI OUTPUT AND EXLPAIN NUMBER OF CPUS, TYPE OF GPU ETC.**
+The model was training using a GPU NVIDIA GeForce GTX 1080 Ti, with 10 GB of memory. Also, 2 CPUs were allocated and each CPU had 15 GB of memory.
 
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/resources.png?raw=true) |
+|:--:|
+| *GPU Information* |
+
+## How To Run
+
+To run the training and evaluation of the model run, checking if we have an available GPU:
+
+```bash
+python -c 'import torch; print(torch.cuda.is_available())'
+python main.py -i {PATH TO IMAGEçS -j {PATH_TO_LABELS}
+````
+
+The following optional arguments can be defined when running the code:
+
+```bash
+usage: main.py [-h] -j JSON_PATH -i IMGS [-b BATCH_SIZE] [-lr LEARNING_RATE] [-e EPOCHS]
+
+Code to Train and Evaluate an 2D Object Detection Model (YOLO V1).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -j JSON_PATH, --json_path JSON_PATH
+                        Path to folder with JSON data.
+  -i IMGS, --imgs IMGS  Path to foler with images. This path should contain 3 folder with val, train and test sets.
+  -b BATCH_SIZE, --batch_size BATCH_SIZE
+                        Batch Size. Default is 32.
+  -lr LEARNING_RATE, --learning_rate LEARNING_RATE
+                        Learning Rate. Default is 0.001
+  -e EPOCHS, --epochs EPOCHS
+                        number of epochs. Default is 100.
+```
+
+A slurm file example when executing in an HPC machine.
+
+```bash
+#!/bin/bash
+#SBATCH --job-name yolov1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=15G
+#SBATCH --gres=gpu:1
+
+module purge
+module load CUDA/11.1.1-GCC-8.3.0
+export CUDA_VISIBLE_DEVICES=0
+
+export LD_LIBRARY_PATH={PATH_TO_LD_LIBRARY_PATH}
+
+source {PATH_TO_CONDA}/miniconda3/etc/profile.d/conda.sh
+conda activate {PATH_TO_CONDA}/miniconda3/envs/AI
+
+python -c 'import torch; print(torch.cuda.is_available())'
+python main.py -i {PATH TO IMAGEçS -j {PATH_TO_LABELS}
+```
 
 ## Training YOLO v1
 
@@ -280,6 +344,22 @@ When training the network and finally solving the exploding gradients problem, t
 | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/loss_convergence.png?raw=true) |
 |:--:|
 | *Example plot of non-convergence of the loss* |
+
+### Predictions Position
+
+After training for a few epochs, we noticed that the  predictions of the bounding boxes where only placed on the sides of the image, no predictions were made on the center of the image. 
+This situation was repeated among all of the images that we checked the model with. 
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/pred_pos_before.png?raw=true) |
+|:--:|
+| *Example of image with bounding box predictions only on the sides.* |
+
+We suggested that the padding on the first convolutional layer of the model could be too big, and because of that the model was mainly focusing on the sides of the images.
+After changing the padding of the first layer, we observed that there were predictions also on the center of the images.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/pred_pos_after.png?raw=true) |
+|:--:|
+| *Example of image with bounding box predictions on the center.* |
 
 ## Transfer Learning
 
@@ -321,86 +401,205 @@ As we have used the Pytorch environment on this project, we have taken advantage
 | *RetinaNet architecture* |
 </div>
 
-The Transfer Learning codes are on the directory *transfer_learning* and in order to reproduce them, we have a mini subset of our dataset in *transfer_learning/data*. We can do the first part of "retraining the models" using the codes *train_FasterRCNN.py* and *train_RetinaNet.py*. 
+### Transfer Learning Code
+The Transfer Learning code is organized in this [Google Colab](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/Transfer_Learning_in_DeepDriving_Dataset.ipynb) in order to be more user-friendly. If we take a look at the colab, we will find it divided in 7 sections:
 
-On the first one, 3 arguments are needed: 
-
-1. **"b"**: It refers to the backbone used. Possibilities:
-
-  - **b=1:** MobileNetV3: Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone
-  
-  - **b=2:** ResNet50: Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
-  
-  - **b=3:** MobileNetV3-320: Constructs a low resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone tunned for mobile use-cases.
-  
-2. **"c":** It refers to the number of classes used (on the data subset we have 11 classes)
+1. Prepare environment 
  
-3. **"e":** Number of epochs for training the model
+	In this first step, the idea was preparing the environment so that the code is perfectly executable. This means that this piece of code is responsible to download the needed data (images and annotations) but also installing all the needed packages to run each one of the cells in the notebook.
 
-So, the main steps would be:
+	A small subset of the data has been prepared specifically for training and validating these models. It is important to note that the training dataset created for this purpose is a subset of the whole Deep Driving training dataset. Also, note that the training dataset is very small (120 images) because it is enough for understand perfectly how transfer learning works and for obtaining quite good results as we will see later.
 
-```
-git clone https://github.com/hemahecodes/AIDL_SelfDrivingProject
-cd transfer_learning
-python train_FasterRCNN.py -b 1 -c 11 -e 20
-```
+2. Define DeepDriving Dataset Class
 
-This last instructions will train and save the model with the trained weights in *transfer_learning/models*, in the ".pth" file it will be specified the pretrained model and backbone used.
-
-On the case of RetinaNet, we do not have to specify the backbone (as the only available is ResNet50) so we only should give the number of classes and epochs.
-
-In order to do inference with the "retrained" models, we can use the *inference....py* scripts as follows:
-
-```
-python inference_FasterRCNN_resnet50.py -i "data/DeepDriving/test/fd5bae34-d63db3d7.jpg"
-```
+	In order to pass the data through the data loader and the model, a new class is created where all the Dataset details are specified. 
+	
+	As always, this class has 2 main functions:
+	
+	* \__init\__ : Here, the images and json file are opened and saved as self objects
+	
+	* \__getitem\__: This is the most important part of the DeepDrivingDataset class, where the bounding boxes and labels are saved but also where the transformations are applied to the images. \__getitem\__ function will be the responsible to returning the images and targets.
+	
+	In order to better understand the code, here we have an example of annotation:
 
 
-The image with the bounding boxes of the objects detected will be automatically showed and saved on *predictions/prediction_FastRCNN-ResNet50fd5bae34-d63db3d7.jpg*. In this particular case, the result would be:
+			{"name": "4c2cd55b-31488766.jpg",							
+				"attributes": {							
+					"weather": "clear",						
+					"scene": "city street",						
+					"timeofday": "daytime"						
+					},							
+				"timestamp": 10000,							
+				"labels": [{							
+					"category": "traffic light",						
+					"attributes": {						
+						"occluded": false,					
+						"truncated": false,					
+						"trafficLightColor": "green"					
+						},						
+					"manualShape": true,						
+					"manualAttributes": true,						
+					"box2d": {						
+						"x1": 464.326734,					
+						"y1": 243.551131,					
+						"x2": 474.245106,					
+						"y2": 270.00012					
+						},						
+					"id": 825728						
+					}]							
+				}
+	
+			
+	So, the annotations will be found on 'labels' *section* that's why we have the code
 
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156932373-8892b364-6e24-4b0f-b2ab-65c55c0e201b.jpg)|
-|:--:|
-| *Transfer learning result example* |
-</div>
-So, we can see that it has worked pretty well. In general, we have seen the best results when using FastRCNN with ResNet50 backbone and the worst with Fast R-CNN and MobileNet v3-320. In fact, if we compare this image predicted with the other pretrained models:
+	```
+	self.annotations.append(v["labels"])
+	```	
+	which creates a list with all the annotations found in an image ('v').
+	
+	On the following piece of code, we can see how boxes and categories are saved (looking for them under the labels 'box2d' and 'category' respectively)
+	```
+        for labels in self.annotations[idx]:
+          if 'box2d' in labels:
+            annotation = labels['box2d']
+            lab = labels['category']
+	    	categories.append(self.label2idx[lab])
+            #select the corners of the boxes for each axis. it should be a list with 4 values: 2 coordinates.
+            boxes.append([annotation["x1"],annotation["y1"],annotation["x2"],annotation["y2"]]) 
+	```	
+	
+	Finally, a dictionary 'target' is created containing boxes and labels for the studied image and the image is converted to tensor (in order to apply the model directly to that).
+			
+3. Download the Pretrained model
 
-**FastRCNN with MobileNet v3**
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156932786-ebf34c90-201e-4dfd-8faf-3e70467aeb49.jpg)|
-|:--:|
-| *FastRCNN Prediction with MobileNet v3* |
-</div>
+	We could say that this section is one of the most important parts of the code. Here, the idea is downloading pretrained models that are in PyTorch and adapt them to our dataset. In order to do that, we have chosen 2 models:
+	
+	3.1. Faster-RCNN: As we have seen this model on the Postgraduate Lessons, we know that this model works pretty good and we had the advantage that it is already pretrained in PyTorch with different backbones. But before we continue, let's define better what is a backbone of the object detection model:
 
-**FastRCNN with MobileNet v3-320**
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156933141-8235ec4c-92e9-445c-bfa9-9ee19f29a083.jpg)|
-|:--:|
-| *FastRCNN Prediction with MobileNet v3-320* |
-</div>
+	**A backbone is a pre-trained model (it can be pre-trained on ImageNet, ResNet50, MobileNet...) that works as a feature extractor, which gives to the model a feature map representation of the input.** So, once the model has the backbone defined, it has to perform the actual task which is object detection in our case. Summarizing, a backbone is very useful to make the network learn faster the object detection task.
+	
+	3.2. RetinaNet: We also used this model but in this case we only have the pretrained model with ResNet50 backbone
 
-**FastRCNN with ResNet50**
-<div align="center">
-  
-|![alt text](https://user-images.githubusercontent.com/94481725/156933380-d23eb36c-e577-4f0c-a8cc-8ea7df6ab430.jpg)|
-|:--:|
-| *FastRCNN Prediction with ResNet50* |
-</div>
-
-**RetinaNet with ResNet50**
-
-<div align="center">
-  
-| ![alt text](https://user-images.githubusercontent.com/94481725/156934024-869e4bc5-58d8-4c49-b34d-696e32e5c25b.jpg) |
-|:--:|
-| *RetinaNet Prediction with ResNet50* |
-</div>
+	It is important to note that in order to run this peace of code, 2 parameters need to be defined:
+	* backb: 1, 2 or 3 for "MobileNet v3", "ResNet 50" or "MobileNet v3-320" respectively
+	* pret_model: "FasterRCNN" or "RetinaNet" depending on the pretrained network for object detection that we want to use
 
 
+4. Create the training function
+
+	The training function is surprisingly one of the simplest functions in this notebook. It is only needed to take into account that we have to perform the usual steps:
+	* Set optimizer gradients to zero before starting backbpropagtion
+	* Save loss from model in order to monitor the loss evolution
+	* Perform backpropagation to update the weights and biases
+	* Do an step of the optimizer so the optimizer iterates over all parameters
+	
+5. Create the evaluation function
+
+	The evaluation function is much more complicated than the training one because here we compute different metrics to obtain the Mean Average Precision (mAp) of each epoch. Step by step:
+	* Use the model to obtain the bounding boxes predicted
+	* Perform NonMaximumSupression (object detection technique that aims at selecting the best bounding box out of a set of overlapping boxes) on the Bounding Boxes predicted so we do not have a lot of overlaping bboxes. In order to do NmS, we use an IoU threshold of 0.2 but it can be changed.
+	* After that, we select boxes, scores and labels of the filtered bounding boxes and we start working only with this subset.
+	* Next, a loop is done over the 13 categories of our dataset. For each category, we see if there are Ground Truth Bounding Boxes and Predicted Bounding Boxes. If it is the case, we compute the IoU between all the GT boxes vs all the predicted ones and we keep the one with highest IoU.
+	* If the highest IoU is greater than the IoU threshold defined, we have a True Positive; otherwise, we will have a False Positive.
+	* We compute the total of TP and FP for each class and then the recall and precision.
+	* Then, we use the function `torch.trapz` in order to compute the area under the curve of precision-recall. The average of all the areas (one for each category) is computed and showed as the Average Precision of the current image.
+	* At the end of the epoch, the Mean of the Average Precision of all the images is computed and printed as mAP of the epoch.
+	
+6. Training Loop (with evaluation included)
+
+	Finally we have the training loop, where for each epoch it performs the training (setting the model to model.train() and using the `train` function explained on point 4 and the validation (setting the model to model.eval() and using the `evaluate`function explained on point 5.
+	
+	After each epoch, the model is saved on the folder 'models' and the predictions on a folder called predictions_epochx and the file names will specify which model has been used.
+	
+7. Performing only the evaluation (loading the models already pretrained with TL)
+
+	This section is almost the same as the previous one. The main difference is that here, the models are loaded already trained so you do not have to spend time training them. In order to download the models we had to upload them on our Google Cloud Storage in a specific public bucket created for this purpose. 
+	
+	
 ## Models comparison
+
+In this section we will compare the different pretrained models used with transfer learning methods in order to see which ones have the best performance. 
+
+We will start with the training results. We have trained the 4 models/backbones with 120 images, 3 epochs and a batch size of 5. So, first we will compare the different backbones used for FasterRCNN because we have the same loss types here:
+
+| Loss Type           | Epoch     | FRCNN-MNetV3 | FRCNN-ResNet50 | FRCNN-MNetV3-320 | RetinaNet-ResNet50   |
+| --------------------| --------  | -------------| -------------- | -----------------| -------------------- | 
+| Classifier Loss     | Epoch 1   | 0.782	 | 0.806	  | 0.699	     | 0.628                |
+| Classifier Loss     | Epoch 2   | 0.378	 | 0.444	  | 0.370	     | 0.440                |
+| Classifier Loss     | Epoch 3   | 0.333	 | 0.352	  | 0.206	     | 0.303                |
+| Box Regression Loss | Epoch 1   | 0.544	 | 0.611	  | 0.298	     | 0.388                |
+| Box Regression Loss | Epoch 2   | 0.446	 | 0.541	  | 0.258	     | 0.332                |
+| Box Regression Loss | Epoch 3   | 0.420	 | 0.524	  | 0.158	     | 0.305                |
+| ObjectNess Loss     | Epoch 1   | 0.130	 | 0.226	  | 0.105	     |   -                  |
+| ObjectNess Loss     | Epoch 2   | 0.071	 | 0.088	  | 0.092	     |   -                  |
+| ObjectNess Loss     | Epoch 3   | 0.055	 | 0.058	  | 0.102	     |   -                  |
+| RPN Loss	      | Epoch 1   | 0.125	 | 0.237	  | 0.161	     |   -                  |
+| RPN Loss	      | Epoch 2   | 0.112	 | 0.183	  | 0.145	     |   -                  |
+| RPN Loss	      | Epoch 3   | 0.103	 | 0.163	  | 0.130	     |   -                  |
+
+We can see that all the losses tend to decrease but we can highlight the classifier loss which normally tends to decrease around a 50% from the first epoch to the second one. Also, we should note that in general, all the losses are really small, this is due to the fact that these models are already trained so it is normal that we do not have very high losses. Another interesting thing to see is that the RPN and box regression losses are the ones that decrease more slowly, it can also be happening because the models already know to detect objects but they have to learn the exact classes which may be different from the ones used in the pretrained models.
+
+Finally, if we take a look at the average loss per epoch (and also compared with RetinaNet average loss):
+| Loss Type     | Epoch     | FRCNN - MobileNetV3     | FRCNN - ResNet50        | FRCNN - MobileNetV3-320 | RetinaNet-ResNet50     |
+| --------------| --------  | ------------------------| ----------------------- | ----------------------- | ---------------------- | 
+| Average Loss  | Epoch 1   | 0.395	  	      | 0.470		  	| 0.316	  		  | 0.508	  	   |
+| Average Loss  | Epoch 2   | 0.252	  	      | 0.314		  	| 0.216	  		  | 0.386	  	   |
+| Average Loss  | Epoch 3   | 0.228	  	      | 0.274		  	| 0.149	  		  | 0.304	  	   |
+
+We can see that all the losses tend to decrease and it seems that FasterRCNN with MobileNetV3-320 as backbone offers the best results but let's see what happens on the evaluation of the model with validation images.
+
+First of all we will take a look at the Mean Average Precision of the 3 validation epochs for each of the tested models:
+| Epoch     | FRCNN - MobileNetV3     | FRCNN - ResNet50        | FRCNN - MobileNetV3-320 | RetinaNet-ResNet50     |
+| --------  | ------------------------| ----------------------- | ----------------------- | ---------------------- | 
+| Epoch 1   | 0.430	  	      | 0.517		  	| 0.301	  		  | 0.498	  	   |
+| Epoch 2   | 0.476	  	      | 0.457		  	| 0.219	  		  | 0.377	  	   |
+| Epoch 3   | 0.358	  	      | 0.457		  	| 0.223	  		  | 0.461	  	   |
+
+Here we can see that in most of the cases, the Mean Average Precision is better on the first epoch. However, it can be seen that the results are much better than the ones obtained in YOLO v1 from scratch. Furthermore, if we only look at these values, it may seem very small but let's see some images on the first epoch:
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/ResNets4.png?raw=true) |
+|:--:|
+| *Comparison between ResNet backbone in FasterRCNN vs RetinaNet* |
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/MobileNets4.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in MobileNetV3 vs MobileNetV3-320* |
+
+On these first images, we can see that the models are detecting quite good the main elements of the image, but it can be seen that MobileNetV3-320 may have less precission and also less accuracy when detecting objects that are a more small (cars at the left). Also, any model is able to detect the traffic signs propery except for the RetinaNet which detects the traffic sign on the right. However it has a lower Average Precision than the Faster RCNN with ResNet50.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/ResNets5.png?raw=true) |
+|:--:|
+| *Comparison between ResNet backbone in FasterRCNN vs RetinaNet* |
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/MobileNets5.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in MobileNetV3 vs MobileNetV3-320* |
+
+Now, again MobileNetV3-320 is the worst model detecting the objects of the image but at least it detects the bigger objects. On the other hand, RetinaNet with ResNet 50 is the only model capable to detect traffic signs on the left.
+
+Now, let's see a very interesting example where we will compare the same image on the different validating epochs. As we have seen that the FasterRCNN model with MobileNetv3-320 backbone is not working well, we are not going to pay attention to this one but to the others.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/mobilenetepochs.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in MobileNetV3 in the different epochs* |
+
+Here, it can be seen that there are not so much differences between the first and the second epoch. On the second epoch, as our threshold is 0.2, as there are less detections, the AP is better but in fact it does not mean that our model is performing better but we should need to adjust the IoU threshold. The main difference comes on the 3rd epoch where the model seems to have learnt more labels (person and traffic sign) and it starts detecting these objects. Again, the Average Precision is worse because there are much more positives (True or False) and it increases the probability of failing.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/resnetfepochs.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in ResNet50 in the different epochs* |
+
+On the case of FasterRCNN with ResNet50 backbone, we start looking differences at the 2nd epoch where it seems that the model has already learnt the traffic signs labels. In the 3rd epoch, it starts to understand what is a person and so, it does some detections of people. Also here, we can note that the average precision decreases as the model learns new labels.
+
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/resnetrepochs.png?raw=true) |
+|:--:|
+| *Comparison between RetinaNet in ResNet50 in the different epochs* |
+
+Finally, we can see that RetinaNet with ResNet50 backbone starts to "learn" detecting people at the 2nd epoch and traffic signs at the 3rd epoch. Also it can be seen the problem of Average Precision due to the fact that it increases the number of available labels.
+
+
+
+
 
 ## Validation with our own images
 
