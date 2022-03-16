@@ -3,12 +3,6 @@ import torch
 import torch.nn as nn
 import wandb
 
-color = []
-num_objects = 80
-for i in range(num_objects):
-    color.append('#%06X' % randint(0, 0xFFFFFF))
-
-
 def IoU(target, prediction):
     """
     Calculates the Intersection over Union of two bounding boxes.
@@ -30,7 +24,8 @@ def IoU(target, prediction):
     intersection = max(0, (i_x2 - i_x1)) * max(0, (i_y2 - i_y1))
     union = ((target[2] - target[0]) * (target[3] - target[1])) + ((prediction[2] - prediction[0]) *
                                                                    (prediction[3] - prediction[1])) - intersection
-
+    if union == 0 or intersection == 0:
+        return 0
     iou_value = intersection / union
     return iou_value
 
@@ -133,7 +128,6 @@ def mAP(pred_boxes,true_boxes,iou_threshold,category_list):
     # list storing all AP for respective classes
     average_precisions = []
 
-    # used for numerical stability later on
     epsilon = 1e-6
 
     for c in range(len(category_list)):
@@ -154,14 +148,9 @@ def mAP(pred_boxes,true_boxes,iou_threshold,category_list):
 
         # find the amount of bboxes for each training example
         # Counter here finds how many ground truth bboxes we get
-        # for each training example, so let's say img 0 has 3,
-        # img 1 has 5 then we will obtain a dictionary with:
-        # amount_bboxes = {0:3, 1:5}
+        # for each training example
         amount_bboxes = Counter([gt[0] for gt in ground_truths])
 
-        # We then go through each key, val in this dictionary
-        # and convert to the following (w.r.t same example):
-        # ammount_bboxes = {0:torch.tensor[0,0,0], 1:torch.tensor[0,0,0,0,0]}
         for key, val in amount_bboxes.items():
             amount_bboxes[key] = torch.zeros(val)
 
@@ -213,8 +202,6 @@ def mAP(pred_boxes,true_boxes,iou_threshold,category_list):
         precisions = torch.divide(TP_cumsum, (TP_cumsum + FP_cumsum + epsilon))
         precisions = torch.cat((torch.tensor([1]), precisions))
         recalls = torch.cat((torch.tensor([0]), recalls))
-        # torch.trapz for numerical integration
-        #wandb.log({"map  %s" % str(category_list[c]) : torch.trapz(precisions, recalls)})
         average_precisions.append(torch.trapz(precisions, recalls))
 
     print(average_precisions)
@@ -268,9 +255,6 @@ class YoloLoss(nn.Module):
             torch.flatten(box_predictions, end_dim=-2),
             torch.flatten(box_targets, end_dim=-2),
         )
-        #print("box_loss %s is:" % set)
-        #print(box_loss)
-        #wandb.log({"box loss %s" % set: box_loss})
 
         # ==================== #
         #   FOR OBJECT LOSS    #
@@ -285,9 +269,6 @@ class YoloLoss(nn.Module):
             torch.flatten(exists_box * pred_box),
             torch.flatten(exists_box * target[..., num_classes:num_classes+1]),
         )
-        #print("object loss %s is" % set)
-        #print(object_loss)
-        #wandb.log({"object loss %s" % set: object_loss})
 
         # ======================= #
         #   FOR NO OBJECT LOSS    #
@@ -308,9 +289,6 @@ class YoloLoss(nn.Module):
             torch.flatten((1 - exists_box) * predictions[..., num_classes+5:num_classes+6], start_dim=1),
             torch.flatten((1 - exists_box) * target[..., num_classes:num_classes+1], start_dim=1)
         )
-        #print("no object loss  %s is" % set)
-        #print(no_object_loss)
-        #wandb.log({"no object loss %s" % set: no_object_loss})
 
         # ================== #
         #   FOR CLASS LOSS   #
@@ -320,9 +298,6 @@ class YoloLoss(nn.Module):
             torch.flatten(exists_box * predictions[..., :num_classes], end_dim=-2, ),
             torch.flatten(exists_box * target[..., :num_classes], end_dim=-2, ),
         )
-        #print("class_loss %s" % set)
-        #print(class_loss)
-        #wandb.log({"class loss %s" % set: class_loss})
 
         loss = (
                 self.lambda_coord * box_loss  # first two rows in paper
@@ -330,8 +305,6 @@ class YoloLoss(nn.Module):
                 + self.lambda_noobj * no_object_loss  # forth row
                 + class_loss  # fifth row
         )
-        #print("final loss is:")
-        #print(loss)
 
         return loss
 

@@ -21,19 +21,27 @@ class BDD100k_Dataset(Dataset):
         self.set = set
         if self.set == 'train':
             self.label_json = 'bdd100k_labels_images_train.json'
+            self.images = sorted(glob.glob(os.path.join(imgs_path, self.set) + '/*.jpg'))
         else:
             self.label_json = 'bdd100k_labels_images_val.json'
+            self.images = sorted(glob.glob(os.path.join(imgs_path, self.set) + '/*.jpg'))
         self.category_list = category_list
         self.json_file = open(os.path.join(f, self.label_json),'r')
         self.target_files = json.load(self.json_file)
-        self.images = sorted(glob.glob(os.path.join(imgs_path,self.set)+'/*.jpg'))
         self.labels = {}
         for image in self.images:
             self.labels[os.path.basename(image)] = extract_json_label(os.path.basename(image),os.path.join(imgs_path,self.set),self.target_files,self.category_list)
             if self.labels[os.path.basename(image)] is None:
                 del self.labels[os.path.basename(image)]
                 self.images.remove(image)
-        breakpoint()
+        # Check to ensure all images have lables:
+        for image in self.images:
+            try:
+                self.labels[os.path.basename(image)]
+            except:
+                print('Data Checker Error: Image has no existing label')
+                self.images.remove(image)
+
     def __getitem__(self,
                     idx):
         import os
