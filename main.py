@@ -19,14 +19,18 @@ from utils import extract_boxes
 
 
 def get_args():
-    parser = ap.ArgumentParser()
+    parser = ap.ArgumentParser(description='Code to Train and Evaluate an 2D Object Detection Model (YOLO V1).')
     parser.add_argument("-j", "--json_path", type=str, required=True,
                         help="Path to folder with JSON data.")
     parser.add_argument("-i", "--imgs", type=str, required=True,
-                       help="Path to folder with images.")
-    parser.add_argument("-b", "--batch_size", type=int)
-    parser.add_argument("-lr", "--learning_rate", type=float)
-    parser.add_argument("-e", "--epochs", type=int)
+                       help= 'Path to foler with images. This path should '
+                             'contain 3 folder with val, train and test sets.')
+    parser.add_argument("-b", "--batch_size", type=int, default=32,
+                        help='Batch Size. Default is 32.', required=False)
+    parser.add_argument("-lr", "--learning_rate", type=float, default=0.001,
+                        help='Learning Rate. Default is 0.001', required=False)
+    parser.add_argument("-e", "--epochs", type=int, default=100,
+                        help='number of epochs. Default is 100.', required=False)
     args = parser.parse_args()
     return args
 
