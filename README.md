@@ -142,6 +142,105 @@ On the following example, the cell (4,3) would be the responsible for detecting 
 
 In order to do this, YOLO v1 has an architecture consisting of 6 blocks combining convolutional layers with maxpooling layers and followed by 2 fully connected layers. Furthermore it applies the Leaky ReLu activation function after all layers except for the last one and uses dropout between the two fully connected layers in order to tackle overfitting.
 
+Summary of our YOLO V1 model implemented from scratch:
+
+```bash
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Conv2d-1         [-1, 64, 222, 222]           9,472
+       BatchNorm2d-2         [-1, 64, 222, 222]             128
+         LeakyReLU-3         [-1, 64, 222, 222]               0
+         MaxPool2d-4         [-1, 64, 111, 111]               0
+            Conv2d-5        [-1, 192, 111, 111]         110,784
+       BatchNorm2d-6        [-1, 192, 111, 111]             384
+         LeakyReLU-7        [-1, 192, 111, 111]               0
+         MaxPool2d-8          [-1, 192, 55, 55]               0
+            Conv2d-9          [-1, 128, 55, 55]          24,704
+      BatchNorm2d-10          [-1, 128, 55, 55]             256
+        LeakyReLU-11          [-1, 128, 55, 55]               0
+           Conv2d-12          [-1, 256, 55, 55]         295,168
+      BatchNorm2d-13          [-1, 256, 55, 55]             512
+        LeakyReLU-14          [-1, 256, 55, 55]               0
+           Conv2d-15          [-1, 256, 55, 55]          65,792
+      BatchNorm2d-16          [-1, 256, 55, 55]             512
+        LeakyReLU-17          [-1, 256, 55, 55]               0
+           Conv2d-18          [-1, 512, 55, 55]       1,180,160
+      BatchNorm2d-19          [-1, 512, 55, 55]           1,024
+        LeakyReLU-20          [-1, 512, 55, 55]               0
+        MaxPool2d-21          [-1, 512, 27, 27]               0
+           Conv2d-22          [-1, 256, 27, 27]         131,328
+      BatchNorm2d-23          [-1, 256, 27, 27]             512
+        LeakyReLU-24          [-1, 256, 27, 27]               0
+           Conv2d-25          [-1, 512, 27, 27]       1,180,160
+      BatchNorm2d-26          [-1, 512, 27, 27]           1,024
+        LeakyReLU-27          [-1, 512, 27, 27]               0
+           Conv2d-28          [-1, 256, 27, 27]         131,328
+      BatchNorm2d-29          [-1, 256, 27, 27]             512
+        LeakyReLU-30          [-1, 256, 27, 27]               0
+           Conv2d-31          [-1, 512, 27, 27]       1,180,160
+      BatchNorm2d-32          [-1, 512, 27, 27]           1,024
+        LeakyReLU-33          [-1, 512, 27, 27]               0
+           Conv2d-34          [-1, 256, 27, 27]         131,328
+      BatchNorm2d-35          [-1, 256, 27, 27]             512
+        LeakyReLU-36          [-1, 256, 27, 27]               0
+           Conv2d-37          [-1, 512, 27, 27]       1,180,160
+      BatchNorm2d-38          [-1, 512, 27, 27]           1,024
+        LeakyReLU-39          [-1, 512, 27, 27]               0
+           Conv2d-40          [-1, 256, 27, 27]         131,328
+      BatchNorm2d-41          [-1, 256, 27, 27]             512
+        LeakyReLU-42          [-1, 256, 27, 27]               0
+           Conv2d-43          [-1, 512, 27, 27]       1,180,160
+      BatchNorm2d-44          [-1, 512, 27, 27]           1,024
+        LeakyReLU-45          [-1, 512, 27, 27]               0
+           Conv2d-46          [-1, 512, 27, 27]         262,656
+      BatchNorm2d-47          [-1, 512, 27, 27]           1,024
+        LeakyReLU-48          [-1, 512, 27, 27]               0
+           Conv2d-49         [-1, 1024, 27, 27]       4,719,616
+      BatchNorm2d-50         [-1, 1024, 27, 27]           2,048
+        LeakyReLU-51         [-1, 1024, 27, 27]               0
+        MaxPool2d-52         [-1, 1024, 13, 13]               0
+           Conv2d-53          [-1, 512, 13, 13]         524,800
+      BatchNorm2d-54          [-1, 512, 13, 13]           1,024
+        LeakyReLU-55          [-1, 512, 13, 13]               0
+           Conv2d-56         [-1, 1024, 13, 13]       4,719,616
+      BatchNorm2d-57         [-1, 1024, 13, 13]           2,048
+        LeakyReLU-58         [-1, 1024, 13, 13]               0
+           Conv2d-59          [-1, 512, 13, 13]         524,800
+      BatchNorm2d-60          [-1, 512, 13, 13]           1,024
+        LeakyReLU-61          [-1, 512, 13, 13]               0
+           Conv2d-62         [-1, 1024, 13, 13]       4,719,616
+      BatchNorm2d-63         [-1, 1024, 13, 13]           2,048
+        LeakyReLU-64         [-1, 1024, 13, 13]               0
+           Conv2d-65         [-1, 1024, 13, 13]       9,438,208
+      BatchNorm2d-66         [-1, 1024, 13, 13]           2,048
+        LeakyReLU-67         [-1, 1024, 13, 13]               0
+           Conv2d-68           [-1, 1024, 7, 7]       9,438,208
+      BatchNorm2d-69           [-1, 1024, 7, 7]           2,048
+        LeakyReLU-70           [-1, 1024, 7, 7]               0
+           Conv2d-71           [-1, 1024, 7, 7]       9,438,208
+      BatchNorm2d-72           [-1, 1024, 7, 7]           2,048
+        LeakyReLU-73           [-1, 1024, 7, 7]               0
+           Conv2d-74           [-1, 1024, 7, 7]       9,438,208
+      BatchNorm2d-75           [-1, 1024, 7, 7]           2,048
+        LeakyReLU-76           [-1, 1024, 7, 7]               0
+           Linear-77                  [-1, 496]      24,887,792
+          Dropout-78                  [-1, 496]               0
+        LeakyReLU-79                  [-1, 496]               0
+           Linear-80                 [-1, 1127]         560,119
+          Sigmoid-81                 [-1, 1127]               0
+================================================================
+Total params: 85,630,247
+Trainable params: 85,630,247
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 2.30
+Forward/backward pass size (MB): 316.92
+Params size (MB): 326.65
+Estimated Total Size (MB): 645.87
+----------------------------------------------------------------
+
+
 <div align="center">
   
 | ![alt text](https://user-images.githubusercontent.com/94481725/156921245-b489fc5f-b218-41b8-9c38-27ca6a868e7b.jpg) |
