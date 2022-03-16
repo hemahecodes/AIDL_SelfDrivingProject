@@ -142,21 +142,6 @@ On the following example, the cell (4,3) would be the responsible for detecting 
 
 In order to do this, YOLO v1 has an architecture consisting of 6 blocks combining convolutional layers with maxpooling layers and followed by 2 fully connected layers. Furthermore it applies the Leaky ReLu activation function after all layers except for the last one and uses dropout between the two fully connected layers in order to tackle overfitting.
 
-Number of parameters of our YOLO V1 model implemented from scratch:
-
-```bash
-================================================================
-Total params: 85,630,247
-Trainable params: 85,630,247
-Non-trainable params: 0
-----------------------------------------------------------------
-Input size (MB): 2.30
-Forward/backward pass size (MB): 316.92
-Params size (MB): 326.65
-Estimated Total Size (MB): 645.87
-----------------------------------------------------------------
-```
-
 
 <div align="center">
   
@@ -181,6 +166,23 @@ So, for each cell of the image you have:
 |:--:|
 |*Yolo V1 predict two bounding box, inside the two bounding box it has 5 attributes this are:x_y coordinate , width, height and confidence score for each bounding box.  totaly it has 10 attributes and the remaining 20 are for class probability*.|
 </div>
+
+### Number of Parameters
+Number of parameters of our YOLO V1 model implemented from scratch:
+
+```bash
+================================================================
+Total params: 85,630,247
+Trainable params: 85,630,247
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 2.30
+Forward/backward pass size (MB): 316.92
+Params size (MB): 326.65
+Estimated Total Size (MB): 645.87
+----------------------------------------------------------------
+```
+
 
 ### Loss functions
 
