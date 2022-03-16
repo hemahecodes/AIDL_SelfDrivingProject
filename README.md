@@ -532,7 +532,12 @@ The Transfer Learning code is organized in this [Google Colab](https://github.co
 7. Performing only the evaluation (loading the models already pretrained with TL)
 
 	This section is almost the same as the previous one. The main difference is that here, the models are loaded already trained so you do not have to spend time training them. In order to download the models we had to upload them on our Google Cloud Storage in a specific public bucket created for this purpose. 
+
+8. Testing the models with slef-uploaded images
+
+	On this last section, the user can upload his/her own images from a local environment for testing the different models trained. In order to do that, first it is used the google.colab package and the `files.upload()` function.
 	
+	Once the image is uploaded, it is passed through the model selected on the previous cells with the self-defined testing function. After executing the function we will obtain an image saved on 'predictions' folder with the bounding box predicted drawn on it.
 	
 ## Models comparison
 
@@ -615,11 +620,15 @@ On the case of FasterRCNN with ResNet50 backbone, we start looking differences a
 
 Finally, we can see that RetinaNet with ResNet50 backbone starts to "learn" detecting people at the 2nd epoch and traffic signs at the 3rd epoch. Also it can be seen the problem of Average Precision due to the fact that it increases the number of available labels.
 
-
-
-
-
 ## Validation with our own images
+
+As said before, at the last section of the Google Colab, the user can upload an image and the selected model will predict the resulting bounding boxes and labels. Here, we can see an example of a photo took by ourselves and passed through the model:
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/prediction_ResNet50inFasterRCNNselfimage.png?raw=true) |
+|:--:|
+| *Self-user image passed through FasterRCNN with ResNet 50* |
+
+We can see that the model is working very well, detecting mainly the cars, traffic signs and traffic lights.
 
 ## Conclusion and future work
  In our project we implemented and trained a one stage detector YOLO and two stage detector Faster R-CNN on the BDD 100K dataset in the context of of autonomous vehicles.
