@@ -330,7 +330,7 @@ As we have used the Pytorch environment on this project, we have taken advantage
 </div>
 
 ### Transfer Learning Code
-The Transfer Learning code is organized in this Google Colab in order to be more user-friendly. If we take a look at the colab, we will find it divided in 6 sections:
+The Transfer Learning code is organized in this Google Colab in order to be more user-friendly. If we take a look at the colab, we will find it divided in 7 sections:
 
 1. Prepare environment 
  
@@ -409,7 +409,7 @@ The Transfer Learning code is organized in this Google Colab in order to be more
 	3.2. RetinaNet: We also used this model but in this case we only have the pretrained model with ResNet50 backbone
 
 	It is important to note that in order to run this peace of code, 2 parameters need to be defined:
-	* backb: 1, 2 or 3 for "MobileNet v2", "ResNet 50" or "MobileNet v2-320" respectively
+	* backb: 1, 2 or 3 for "MobileNet v3", "ResNet 50" or "MobileNet v3-320" respectively
 	* pret_model: "FasterRCNN" or "RetinaNet" depending on the pretrained network for object detection that we want to use
 
 
@@ -433,14 +433,76 @@ The Transfer Learning code is organized in this Google Colab in order to be more
 	* Then, we use the function `torch.trapz` in order to compute the area under the curve of precision-recall. The average of all the areas (one for each category) is computed and showed as the Average Precision of the current image.
 	* At the end of the epoch, the Mean of the Average Precision of all the images is computed and printed as mAP of the epoch.
 	
-8. Training Loop (with evaluation included)
+6. Training Loop (with evaluation included)
 
 	Finally we have the training loop, where for each epoch it performs the training (setting the model to model.train() and using the `train` function explained on point 4 and the validation (setting the model to model.eval() and using the `evaluate`function explained on point 5.
 	
 	After each epoch, the model is saved on the folder 'models' and the predictions on a folder called predictions_epochx and the file names will specify which model has been used.
 	
+7. Performing only the evaluation (loading the models already pretrained with TL)
+
+	This section is almost the same as the previous one. The main difference is that here, the models are loaded already trained so you do not have to spend time training them. In order to download the models we had to upload them on our Google Cloud Storage in a specific public bucket created for this purpose. 
+	
 	
 ## Models comparison
+
+In this section we will compare the different pretrained models used with transfer learning methods in order to see which ones have the best performance. 
+
+We will start with the training results. We have trained the 4 models/backbones with 120 images, 3 epochs and a batch size of 5. So, first we will compare the different backbones used for FasterRCNN because we have the same loss types here:
+
+| Loss Type           	| Epoch     | FRCNN-MNetV3   | FRCNN-ResNet50 | FRCNN-MNetV3-320 | RetinaNet-ResNet50   |
+| ----------------------| --------  | -------------- | -------------- | -----------------| -------------------- | 
+| Classifier Loss  	| Epoch 1   | 0.782	     | 0.806	      | 0.699	  	 | 0.628                |
+| Classifier Loss  	| Epoch 2   | 0.378	     | 0.444	      | 0.370	  	 | 0.440                |
+| Classifier Loss  	| Epoch 3   | 0.333	     | 0.352	      | 0.206	  	 | 0.303                |
+| Box Regression Loss  	| Epoch 1   | 0.544	     | 0.611	      | 0.298	  	 | 0.388                |
+| Box Regression Loss  	| Epoch 2   | 0.446	     | 0.541	      | 0.258	  	 | 0.332                |
+| Box Regression Loss  	| Epoch 3   | 0.420	     | 0.524	      | 0.158	  	 | 0.305                |
+| ObjectNess Loss  	| Epoch 1   | 0.130	     | 0.226	      | 0.105	  	 | -                    |
+| ObjectNess Loss  	| Epoch 2   | 0.071	     | 0.088	      | 0.092	  	 | -                    |
+| ObjectNess Loss  	| Epoch 3   | 0.055	     | 0.058	      | 0.102	  	 | -                    |
+| RPN Loss	  	| Epoch 1   | 0.125	     | 0.237	      | 0.161	  	 | -                    |
+| RPN Loss	  	| Epoch 2   | 0.112	     | 0.183	      | 0.145	  	 | -                    |
+| RPN Loss	  	| Epoch 3   | 0.103	     | 0.163	      | 0.130	  	 | -                    |
+
+We can see that all the losses tend to decrease but we can highlight the classifier loss which normally tends to decrease around a 50% from the first epoch to the second one. Also, we should note that in general, all the losses are really small, this is due to the fact that these models are already trained so it is normal that we do not have very high losses. Another interesting thing to see is that the RPN and box regression losses are the ones that decrease more slowly, it can also be happening because the models already know to detect objects but they have to learn the exact classes which may be different from the ones used in the pretrained models.
+
+Finally, if we take a look at the average loss per epoch (and also compared with RetinaNet average loss):
+| Loss Type     | Epoch     | FRCNN - MobileNetV3     | FRCNN - ResNet50        | FRCNN - MobileNetV3-320 | RetinaNet-ResNet50     |
+| --------------| --------  | ------------------------| ----------------------- | ----------------------- | ---------------------- | 
+| Average Loss  | Epoch 1   | 0.395	  	      | 0.470		  	| 0.316	  		  | 0.508	  	   |
+| Average Loss  | Epoch 2   | 0.252	  	      | 0.314		  	| 0.216	  		  | 0.386	  	   |
+| Average Loss  | Epoch 3   | 0.228	  	      | 0.274		  	| 0.149	  		  | 0.304	  	   |
+
+We can see that all the losses tend to decrease and it seems that FasterRCNN with MobileNetV3-320 as backbone offers the best results but let's see what happens on the evaluation of the model with validation images.
+
+First of all we will take a look at the Mean Average Precision of the 3 validation epochs for each of the tested models:
+| Epoch     | FRCNN - MobileNetV3     | FRCNN - ResNet50        | FRCNN - MobileNetV3-320 | RetinaNet-ResNet50     |
+| --------  | ------------------------| ----------------------- | ----------------------- | ---------------------- | 
+| Epoch 1   | 0.430	  	      | 0.517		  	| 0.301	  		  | 0.498	  	   |
+| Epoch 2   | 0.476	  	      | 0.457		  	| 0.219	  		  | 0.377	  	   |
+| Epoch 3   | 0.358	  	      | 0.457		  	| 0.223	  		  | 0.461	  	   |
+
+Here we can see that in most of the cases, the Mean Average Precision is better on the first epoch. It could be happening because the model is overfitting because of the few data that was used to 'retrain' the model with transfer learning. However, it can be seen that the results are much better than the ones obtained in YOLO v1 from scratch. Furthermore, if we only look at this values, it may seem very small but let's see some images:
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/ResNets4.png?raw=true) |
+|:--:|
+| *Comparison between ResNet backbone in FasterRCNN vs RetinaNet* |
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/MobileNets4.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in MobileNetV3 vs MobileNetV3-320* |
+
+On these first images, we can see that the models are detecting quite good the main elements of the image, but it can be seen that MobileNetV3-320 may have less precission and also less accuracy when detecting objects that are a more small (cars at the left). Also, any model is able to detect the traffic signs propery except for the RetinaNet which detects the traffic sign on the right. However it has a lower Average Precision than the Faster RCNN with ResNet50.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/ResNets5.png?raw=true) |
+|:--:|
+| *Comparison between ResNet backbone in FasterRCNN vs RetinaNet* |
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/MobileNets5.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in MobileNetV3 vs MobileNetV3-320* |
+
+Now, again MobileNetV3-320 is the worst model detecting the objects of the image but at least it detects the bigger objects.
 
 ## Validation with our own images
 
