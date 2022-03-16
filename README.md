@@ -330,7 +330,7 @@ As we have used the Pytorch environment on this project, we have taken advantage
 </div>
 
 ### Transfer Learning Code
-The Transfer Learning code is organized in this Google Colab in order to be more user-friendly. If we take a look at the colab, we will find it divided in 7 sections:
+The Transfer Learning code is organized in this [Google Colab](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/Transfer_Learning_in_DeepDriving_Dataset.ipynb) in order to be more user-friendly. If we take a look at the colab, we will find it divided in 7 sections:
 
 1. Prepare environment 
  
