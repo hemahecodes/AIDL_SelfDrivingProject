@@ -12,6 +12,7 @@
      * [Intersection Over Union](#intersection-over-union-iou)
      * [Mean Avergae Precision](#mean-average-precision-map)
 * [Computational Resources](#computational-resources)
+* [How To Run](#how-to-run)
 * [Training Yolo V1](#training-yolo-v1)
      * [Challenges](#challenges)
      * [Exploiding Gradients](#exploding-gradients)
@@ -267,6 +268,37 @@ The model was training using a GPU NVIDIA GeForce GTX 1080 Ti, with 10 GB of mem
 | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/data/resources.png?raw=true) |
 |:--:|
 | *GPU Information* |
+
+## How To Run
+
+To run the training and evaluation of the model run, checking if we have an available GPU:
+
+```bash
+python -c 'import torch; print(torch.cuda.is_available())'
+python main.py -i {PATH TO IMAGEçS -j {PATH_TO_LABELS}
+````
+
+A slurm file example when executing in an HPC machine.
+
+```bash
+#!/bin/bash
+#SBATCH --job-name yolov1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=15G
+#SBATCH --gres=gpu:1
+
+module purge
+module load CUDA/11.1.1-GCC-8.3.0
+export CUDA_VISIBLE_DEVICES=0
+
+export LD_LIBRARY_PATH={PATH_TO_LD_LIBRARY_PATH}
+
+source {PATH_TO_CONDA}/miniconda3/etc/profile.d/conda.sh
+conda activate {PATH_TO_CONDA}/miniconda3/envs/AI
+
+python -c 'import torch; print(torch.cuda.is_available())'
+python main.py -i {PATH TO IMAGEçS -j {PATH_TO_LABELS}
+```
 
 ## Training YOLO v1
 
