@@ -483,7 +483,7 @@ First of all we will take a look at the Mean Average Precision of the 3 validati
 | Epoch 2   | 0.476	  	      | 0.457		  	| 0.219	  		  | 0.377	  	   |
 | Epoch 3   | 0.358	  	      | 0.457		  	| 0.223	  		  | 0.461	  	   |
 
-Here we can see that in most of the cases, the Mean Average Precision is better on the first epoch. It could be happening because the model is overfitting because of the few data that was used to 'retrain' the model with transfer learning. However, it can be seen that the results are much better than the ones obtained in YOLO v1 from scratch. Furthermore, if we only look at this values, it may seem very small but let's see some images:
+Here we can see that in most of the cases, the Mean Average Precision is better on the first epoch. However, it can be seen that the results are much better than the ones obtained in YOLO v1 from scratch. Furthermore, if we only look at these values, it may seem very small but let's see some images on the first epoch:
 | ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/ResNets4.png?raw=true) |
 |:--:|
 | *Comparison between ResNet backbone in FasterRCNN vs RetinaNet* |
@@ -502,7 +502,32 @@ On these first images, we can see that the models are detecting quite good the m
 |:--:|
 | *Comparison between FasterRCNN in MobileNetV3 vs MobileNetV3-320* |
 
-Now, again MobileNetV3-320 is the worst model detecting the objects of the image but at least it detects the bigger objects.
+Now, again MobileNetV3-320 is the worst model detecting the objects of the image but at least it detects the bigger objects. On the other hand, RetinaNet with ResNet 50 is the only model capable to detect traffic signs on the left.
+
+Now, let's see a very interesting example where we will compare the same image on the different validating epochs. As we have seen that the FasterRCNN model with MobileNetv3-320 backbone is not working well, we are not going to pay attention to this one but to the others.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/mobilenetepochs.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in MobileNetV3 in the different epochs* |
+
+Here, it can be seen that there are not so much differences between the first and the second epoch. On the second epoch, as our threshold is 0.2, as there are less detections, the AP is better but in fact it does not mean that our model is performing better but we should need to adjust the IoU threshold. The main difference comes on the 3rd epoch where the model seems to have learnt more labels (person and traffic sign) and it starts detecting these objects. Again, the Average Precision is worse because there are much more positives (True or False) and it increases the probability of failing.
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/resnetfepochs.png?raw=true) |
+|:--:|
+| *Comparison between FasterRCNN in ResNet50 in the different epochs* |
+
+On the case of FasterRCNN with ResNet50 backbone, we start looking differences at the 2nd epoch where it seems that the model has already learnt the traffic signs labels. In the 3rd epoch, it starts to understand what is a person and so, it does some detections of people. Also here, we can note that the average precision decreases as the model learns new labels.
+
+
+| ![alt text](https://github.com/hemahecodes/AIDL_SelfDrivingProject/blob/main/transfer_learning/imgs/resnetrepochs.png?raw=true) |
+|:--:|
+| *Comparison between RetinaNet in ResNet50 in the different epochs* |
+
+Finally, we can see that RetinaNet with ResNet50 backbone starts to "learn" detecting people at the 2nd epoch and traffic signs at the 3rd epoch. Also it can be seen the problem of Average Precision due to the fact that it increases the number of available labels.
+
+
+
+
 
 ## Validation with our own images
 
